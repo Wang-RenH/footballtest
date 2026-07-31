@@ -1,12 +1,13 @@
 # AI 跨域代理（手机 / GitHub Pages）
 
-GitHub Pages 是纯静态站，**不能**像本地 `npm run dev` 那样提供 `/ai-proxy`，手机直接调会得到 **HTTP 405**。
+GitHub Pages 没有本地 `/ai-proxy`，手机需要这个 Worker。
 
-## 一键部署（免费）
+## 部署 / 更新（改过 worker.js 后必须重新粘贴）
 
-1. 打开 [Cloudflare Workers](https://dash.cloudflare.com/) → Create Worker  
-2. 把 [`worker.js`](./worker.js) 全文粘贴进去 → Deploy  
-3. 复制地址，例如 `https://greenfield-ai.xxx.workers.dev`（不要末尾斜杠）  
-4. 手机打开游戏 → **设置** → **跨域代理根地址** 填入该 URL → 测试连接  
+1. Cloudflare → Workers & Pages → 你的 Worker → **Edit code**
+2. 全选删除，粘贴本目录 [`worker.js`](./worker.js) 全文
+3. **Deploy**
+4. 浏览器打开：`https://你的地址.workers.dev/health`  
+   应显示 `ok`。若一直转圈，多半是当前网络访问不了 `workers.dev`（国内常见），需换网络/加速，或游戏里改用「本地事件库」。
 
-Key 仍只存在你手机浏览器本地，Worker 只做转发。
+游戏已默认填入代理地址，一般不用在设置里改。

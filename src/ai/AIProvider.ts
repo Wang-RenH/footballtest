@@ -239,6 +239,34 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): P
   }
 }
 
+/** 从 chat 完整 URL 推出代理根，探测 /health */
+async function pingProxyHealth(chatEndpoint: string): Promise<string | null> {
+  try {
+    const u = new URL(chatEndpoint, typeof location !== 'undefined' ? location.href : undefined)
+    if (!/workers\.dev$/i.test(u.hostname) && !u.hostname.includes('workers.dev')) {
+      // 相对路径 /ai-proxy 或官方直连：跳过
+      if (u.pathname.startsWith('/ai-proxy') || !u.hostname.includes('workers')) return null
+    }
+    const healthUrl = `${u.origin}/health`
+    const res = await withTimeout(
+      fetch(healthUrl, { method: 'GET' }),
+      12000,
+      '代理探测',
+    )
+    if (!res.ok) return `跨域代理异常（HTTP ${res.status}）。请重新部署 workers/ai-cors-proxy。`
+    return null
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    if (/超时/.test(msg)) {
+      return '跨域代理连不上（超时）。国内网络常访问不了 *.workers.dev，可换 WiFi/流量、开加速，或设置里改用「本地事件库」。'
+    }
+    if (/failed to fetch|networkerror|load failed/i.test(msg)) {
+      return '跨域代理不可达。国内可能屏蔽 workers.dev：换网络/加速，或用「本地事件库」。'
+    }
+    return null
+  }
+}
+
 export class OpenAICompatibleProvider implements AIProvider {
   name: string
   private endpoint: string
@@ -322,14 +350,19 @@ export class OpenAICompatibleProvider implements AIProvider {
   }
 
   async testConnection(): Promise<{ ok: boolean; detail: string }> {
-    const res = await this.postChat([{ role: 'user', content: '回复ok即可' }], 16, 25000)
+    // 先测代理是否可达（国内部分网络访问 workers.dev 很慢/不通）
+    const proxyPing = await pingProxyHealth(this.endpoint)
+    if (proxyPing) {
+      return { ok: false, detail: proxyPing }
+    }
+    const res = await this.postChat([{ role: 'user', content: '只回复ok' }], 8, 60000)
     const text = await res.text()
     if (!res.ok) {
       return { ok: false, detail: formatHttpError(res.status, text) }
     }
     return {
       ok: true,
-      detail: `连接成功 · 模型 ${this.model} · ${this.endpoint}`,
+      detail: `连接成功 · 模型 ${this.model}`,
     }
   }
 
@@ -370,7 +403,7 @@ export class OpenAICompatibleProvider implements AIProvider {
         { role: 'user', content: buildGodUserPrompt(ctx) },
       ],
       900,
-      90000,
+      120000,
     )
     const text = await res.text()
     if (!res.ok) throw new Error(formatHttpError(res.status, text))
@@ -484,8 +517,12 @@ function formatHttpError(status: number, body: string): string {
 /** 把网络/CORS 失败转成可读中文 */
 export function formatFetchError(err: unknown, endpointHint?: string): string {
   const msg = err instanceof Error ? err.message : String(err)
+  // 已包装过则不再追加，避免文案重复两遍
+  if (/本地事件库|连通测试只测|跨域代理/.test(msg) && /超时|不可达|连不上/.test(msg)) {
+    return msg
+  }
   if (/超时/.test(msg)) {
-    return `${msg}。连通测试只测短回复；生成事件更慢。请点「刷新重试」，或换更快模型（如 glm-4-flash）。`
+    return `${msg}。手机经代理较慢，已加长等待；仍失败请换 glm-4-flash，或改用「本地事件库」。`
   }
   if (/failed to fetch|networkerror|load failed|cors/i.test(msg)) {
     const ep = endpointHint || ''
@@ -493,7 +530,7 @@ export function formatFetchError(err: unknown, endpointHint?: string): string {
       return 'HTTP 代理路径无效：线上站没有 /ai-proxy。请在设置填写「跨域代理根地址」。'
     }
     if (isStaticWebHost() && !/workers\.dev|ai-proxy|localhost/i.test(ep)) {
-      return '无法连接 AI（跨域）。手机/GitHub Pages 请在设置填写 Cloudflare Worker「跨域代理根地址」。'
+      return '无法连接 AI（跨域）。手机/GitHub Pages 请确认跨域代理可用。'
     }
     return `无法连接 AI：${msg}。若在线上站，请检查跨域代理；本地请用 npm run dev。`
   }
