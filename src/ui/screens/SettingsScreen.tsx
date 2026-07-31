@@ -79,13 +79,23 @@ export function SettingsScreen() {
 
       <div className="panel mt-5 space-y-4 p-4">
         <h3 className="text-sm tracking-widest text-white/40">AI 叙事引擎</h3>
+        <p className="text-xs text-[#f0d78c]/网页版 7.31-proxy · 跨域代理已内置</p>
         <p className="text-xs text-white/45">
-          Key 仅存本机。手机/GitHub Pages 已默认走跨域代理；电脑本地用{' '}
+          Key 仅存本机。手机一般不用改代理；电脑本地用{' '}
           <code className="text-[#f0d78c]">npm run dev</code> 即可。
         </p>
+        <label className="block text-sm text-white/60">
+          跨域代理（已默认填好，一般不用改）
+          <input
+            className="mt-1 w-full rounded-md border border-white/10 bg-black/30 px-3 py-2 text-white"
+            value={settings.aiProxyBase}
+            placeholder="https://footballtest.2829546880.workers.dev"
+            onChange={(e) => setSettings({ aiProxyBase: e.target.value.trim() })}
+          />
+        </label>
         {onStaticHost && needsProxy ? (
           <p className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100/90">
-            代理未生效时，可在下方填写 Cloudflare Worker 地址。
+            代理为空时请填写 Cloudflare Worker 地址。
           </p>
         ) : null}
         <label className="flex items-center gap-2 text-sm text-white/70">
@@ -186,15 +196,6 @@ export function SettingsScreen() {
                 : '仅本地保存'
             }
             onChange={(e) => setSettings({ apiKey: e.target.value })}
-          />
-        </label>
-        <label className="block text-sm text-white/60">
-          跨域代理（一般不用改，已默认填好）
-          <input
-            className="mt-1 w-full rounded-md border border-white/10 bg-black/30 px-3 py-2 text-white"
-            value={settings.aiProxyBase}
-            placeholder="https://footballtest.2829546880.workers.dev"
-            onChange={(e) => setSettings({ aiProxyBase: e.target.value.trim() })}
           />
         </label>
         <label className="block text-sm text-white/60">
