@@ -43,6 +43,8 @@ const aiProxy = {
 }
 
 export default defineConfig({
+  // GitHub Pages 子路径：https://Wang-RenH.github.io/footballtest/
+  base: process.env.GITHUB_PAGES === 'true' ? '/footballtest/' : '/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
