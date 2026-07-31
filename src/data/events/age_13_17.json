@@ -1,0 +1,159 @@
+[
+  {
+    "id": "AGE_13_TEST_001",
+    "ageRange": [13, 14],
+    "category": "training",
+    "narrative": "青训营年度分班测试。A队资源最好，B队则意味着更多板凳时间。教练让你们自由发挥。",
+    "options": [
+      {
+        "id": "a",
+        "text": "拼命表现不留余力",
+        "effects": { "attributes": { "PAC": 2, "PHY": 2 }, "growthScore": 100, "fatigue": 20, "injuryRisk": 15 },
+        "consequenceText": "你分入A队，但也埋下了过度训练的隐患。"
+      },
+      {
+        "id": "b",
+        "text": "按节奏正常发挥",
+        "effects": { "attributes": { "PAS": 1, "DRI": 1 }, "growthScore": 70, "relationships": { "coach": 5 } },
+        "consequenceText": "教练欣赏你的理智，你进入A队轮换。"
+      },
+      {
+        "id": "c",
+        "text": "故意保留实力",
+        "effects": { "growthScore": 20, "relationships": { "coach": -8 }, "morale": -5 },
+        "consequenceText": "教练察觉了你的敷衍，把你分到了B队。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_14_INJURY_001",
+    "ageRange": [14, 15],
+    "category": "injury",
+    "narrative": "高强度对抗训练中，你感到脚踝一阵剧痛。队医快步跑来，队友们围了上来。",
+    "options": [
+      {
+        "id": "a",
+        "text": "坚持训练不告诉教练",
+        "effects": { "injuryRisk": 30, "growthScore": -40, "relationships": { "coach": -5 }, "hiddenAttributes": { "professionalism": -1 } },
+        "consequenceText": "伤势恶化，你不得不休养更久。"
+      },
+      {
+        "id": "b",
+        "text": "立即报告队医",
+        "effects": { "injuryRisk": -20, "growthScore": 80, "relationships": { "coach": 8 }, "hiddenAttributes": { "professionalism": 2 }, "funds": -500 },
+        "consequenceText": "及时处理让你更快回到训练场。"
+      },
+      {
+        "id": "c",
+        "text": "自己买药膏应付",
+        "effects": { "injuryRisk": 10, "funds": -300, "growthScore": 30 },
+        "consequenceText": "暂时缓过去了，但队医后来说你不该瞒。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_15_U16_001",
+    "ageRange": [15, 16],
+    "category": "opportunity",
+    "narrative": "国少队选拔名单公布，你的名字赫然在列。学校却提醒你：集训会耽误中考复习。",
+    "options": [
+      {
+        "id": "a",
+        "text": "参加国少选拔",
+        "effects": { "attributes": { "PAC": 2, "SHO": 1, "PHY": 1 }, "growthScore": 180, "potential": 4, "interest": 10, "relationships": { "media": 5 } },
+        "consequenceText": "你穿上了国少队训练服，视野打开了。"
+      },
+      {
+        "id": "b",
+        "text": "放弃，优先学业",
+        "effects": { "growthScore": 40, "relationships": { "mother": 8 }, "interest": -8, "morale": -5 },
+        "consequenceText": "你留下了遗憾，但家人松了一口气。"
+      },
+      {
+        "id": "c",
+        "text": "两边挤时间硬扛",
+        "effects": { "fatigue": 25, "attributes": { "PHY": 1 }, "growthScore": 100, "injuryRisk": 10 },
+        "consequenceText": "你累垮了好几次，但两条路都没彻底放弃。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_16_CONTRACT_001",
+    "ageRange": [16, 17],
+    "category": "opportunity",
+    "isKeyEvent": true,
+    "narrative": "俱乐部经纪人找到你：「签职业合同吧，月薪不低。」父母却希望你至少读完高中。",
+    "options": [
+      {
+        "id": "a",
+        "text": "签下职业合同",
+        "effects": { "funds": 20000, "growthScore": 150, "potential": 3, "interest": 12, "relationships": { "father": -3, "mother": -5 } },
+        "consequenceText": "你正式走上职业道路，压力与机遇并存。"
+      },
+      {
+        "id": "b",
+        "text": "继续学业兼踢球",
+        "effects": { "growthScore": 90, "relationships": { "father": 5, "mother": 8 }, "attributes": { "PAS": 1 }, "potential": 1 },
+        "consequenceText": "你给自己留了退路，成长稍慢但更稳。"
+      },
+      {
+        "id": "c",
+        "text": "谈判要更好条件",
+        "effects": { "funds": 35000, "growthScore": 120, "relationships": { "coach": -4 }, "hiddenAttributes": { "leadership": 1 } },
+        "consequenceText": "俱乐部勉强答应，但对你印象变得复杂。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_17_FIRST_TEAM_001",
+    "ageRange": [17, 17],
+    "category": "social",
+    "narrative": "你被叫上一线队跟训。更衣室里，大牌球星对你爱理不理，有人甚至拿你的鞋开玩笑。",
+    "options": [
+      {
+        "id": "a",
+        "text": "低头苦练证明自己",
+        "effects": { "attributes": { "PHY": 2, "DRI": 1 }, "growthScore": 110, "relationships": { "coach": 6, "teammates": 3 }, "fatigue": 12 },
+        "consequenceText": "一周后，教练当众表扬了你的态度。"
+      },
+      {
+        "id": "b",
+        "text": "恃才傲物回怼",
+        "effects": { "growthScore": 20, "relationships": { "teammates": -10, "coach": -5 }, "morale": -5 },
+        "consequenceText": "更衣室气氛冷了下来，你被边缘化了。"
+      },
+      {
+        "id": "c",
+        "text": "默默观察学习",
+        "effects": { "attributes": { "PAS": 1 }, "growthScore": 70, "hiddenAttributes": { "decision": 1 }, "relationships": { "teammates": 2 } },
+        "consequenceText": "你学到了很多场上细节，也交到一个朋友。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_13_RIVAL_001",
+    "ageRange": [13, 15],
+    "category": "social",
+    "narrative": "同龄竞争者公开挑衅：「加练射门比试，输的请吃饭。」周围队友起哄。",
+    "options": [
+      {
+        "id": "a",
+        "text": "接受挑战",
+        "effects": { "attributes": { "SHO": 2 }, "growthScore": 80, "morale": 8, "relationships": { "teammates": 4 } },
+        "consequenceText": "你赢了比试，信心大增。"
+      },
+      {
+        "id": "b",
+        "text": "拒绝，专注自己的训练",
+        "effects": { "growthScore": 50, "hiddenAttributes": { "professionalism": 1 }, "relationships": { "teammates": -2 } },
+        "consequenceText": "有人说你怂，但教练点了点头。"
+      },
+      {
+        "id": "c",
+        "text": "提议改成传控对抗",
+        "effects": { "attributes": { "PAS": 2, "DRI": 1 }, "growthScore": 75, "relationships": { "teammates": 5 } },
+        "consequenceText": "比试变成了全队参与的趣味对抗。"
+      }
+    ]
+  }
+]

@@ -1,0 +1,159 @@
+[
+  {
+    "id": "AGE_25_CAPTAIN_001",
+    "ageRange": [24, 30],
+    "category": "opportunity",
+    "narrative": "更衣室开会，教练突然宣布：「从下周起，队长袖标给你。」全场安静了两秒，然后响起掌声。",
+    "options": [
+      {
+        "id": "a",
+        "text": "郑重接过袖标",
+        "effects": { "growthScore": 150, "relationships": { "coach": 10, "teammates": 8, "fans": 10 }, "hiddenAttributes": { "leadership": 3 }, "morale": 12 },
+        "consequenceText": "你开始学着带动整支球队。"
+      },
+      {
+        "id": "b",
+        "text": "谦让给更资深的队友",
+        "effects": { "growthScore": 70, "relationships": { "teammates": 12, "coach": 3 }, "hiddenAttributes": { "leadership": 1 } },
+        "consequenceText": "更衣室更团结了，教练说你有格局。"
+      },
+      {
+        "id": "c",
+        "text": "得意忘形炫耀",
+        "effects": { "growthScore": 20, "relationships": { "teammates": -8 }, "morale": 5 },
+        "consequenceText": "很快有人开始在背后议论你。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_26_TRANSFER_001",
+    "ageRange": [23, 29],
+    "category": "opportunity",
+    "isKeyEvent": true,
+    "narrative": "豪门球队发来报价。留队冲击冠军，还是跳槽追求更高舞台与薪资？",
+    "options": [
+      {
+        "id": "a",
+        "text": "留下冲击荣誉",
+        "effects": { "growthScore": 140, "relationships": { "fans": 15, "coach": 8 }, "morale": 10, "funds": 10000 },
+        "consequenceText": "球迷高呼你的名字，更衣室士气大振。"
+      },
+      {
+        "id": "b",
+        "text": "转会到更强俱乐部",
+        "effects": { "funds": 80000, "growthScore": 120, "potential": 2, "relationships": { "fans": -12 }, "attributes": { "PAS": 1, "DRI": 1 } },
+        "consequenceText": "新平台竞争更残酷，但上限也更高。"
+      },
+      {
+        "id": "c",
+        "text": "要价谈判再观望",
+        "effects": { "funds": 40000, "growthScore": 60, "relationships": { "coach": -5 }, "morale": -3 },
+        "consequenceText": "两边都不太满意，赛季中期你有些心神不宁。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_27_INJURY_001",
+    "ageRange": [25, 32],
+    "category": "injury",
+    "narrative": "联赛冲刺阶段，你在争顶时落地不稳。核磁结果显示：中度韧带损伤，至少休战六周。",
+    "options": [
+      {
+        "id": "a",
+        "text": "积极治疗加速康复",
+        "effects": { "funds": -20000, "growthScore": 90, "fatigue": -20, "injuryRisk": -15, "hiddenAttributes": { "professionalism": 1 } },
+        "consequenceText": "昂贵的康复让你提前归队，状态恢复不错。"
+      },
+      {
+        "id": "b",
+        "text": "保守治疗慢慢养",
+        "effects": { "funds": -5000, "growthScore": 50, "morale": -8 },
+        "consequenceText": "归队较慢，主力位置一度被别人占据。"
+      },
+      {
+        "id": "c",
+        "text": "带伤冒险复出",
+        "effects": { "growthScore": -30, "injuryRisk": 40, "attributes": { "PAC": -2, "PHY": -1 }, "relationships": { "coach": -6 } },
+        "consequenceText": "你硬撑了两场，伤势反复，教练非常不满。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_28_SPONSOR_001",
+    "ageRange": [24, 33],
+    "category": "opportunity",
+    "narrative": "运动品牌找上门：代言合同丰厚，但要求你出席大量商业活动，可能影响训练。",
+    "options": [
+      {
+        "id": "a",
+        "text": "接代言但控制活动量",
+        "effects": { "funds": 50000, "growthScore": 80, "relationships": { "media": 8 }, "fatigue": 8 },
+        "consequenceText": "名利双收，训练也大致保住了。"
+      },
+      {
+        "id": "b",
+        "text": "全力商业化",
+        "effects": { "funds": 120000, "growthScore": 20, "attributes": { "PHY": -1 }, "fatigue": 20, "relationships": { "coach": -8 } },
+        "consequenceText": "钱包鼓了，赛场状态却开始下滑。"
+      },
+      {
+        "id": "c",
+        "text": "拒绝，专注足球",
+        "effects": { "growthScore": 100, "relationships": { "coach": 6, "fans": 5 }, "hiddenAttributes": { "professionalism": 2 } },
+        "consequenceText": "你少赚了钱，但训练质量拉满。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_30_SLUMP_001",
+    "ageRange": [28, 33],
+    "category": "life",
+    "narrative": "连续五场评分不及格，舆论开始唱衰。你独自加练到深夜，球网一次次颤动。",
+    "options": [
+      {
+        "id": "a",
+        "text": "咬牙加练走出低谷",
+        "effects": { "attributes": { "SHO": 2, "PHY": 1 }, "growthScore": 130, "fatigue": 18, "morale": 8 },
+        "consequenceText": "下一场你打进制胜球，质疑声暂时平息。"
+      },
+      {
+        "id": "b",
+        "text": "找心理教练疏导",
+        "effects": { "funds": -8000, "growthScore": 110, "morale": 12, "hiddenAttributes": { "composure": 2 } },
+        "consequenceText": "心态回稳，表现逐渐回到应有水平。"
+      },
+      {
+        "id": "c",
+        "text": "沉溺娱乐逃避压力",
+        "effects": { "growthScore": -50, "morale": -10, "attributes": { "PHY": -2 }, "relationships": { "coach": -10 }, "fatigue": -5 },
+        "consequenceText": "状态继续滑坡，教练把你踢出了首发。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_24_NT_RUMOR_001",
+    "ageRange": [23, 28],
+    "category": "opportunity",
+    "narrative": "媒体爆料你进入国家队考察名单。俱乐部希望你联赛为重，球迷则期待你为国出征。",
+    "options": [
+      {
+        "id": "a",
+        "text": "积极争取国足机会",
+        "effects": { "growthScore": 160, "relationships": { "media": 10, "fans": 12 }, "attributes": { "PHY": 1 }, "fatigue": 10 },
+        "consequenceText": "你的名字开始和「国脚」联系在一起。"
+      },
+      {
+        "id": "b",
+        "text": "以俱乐部成绩为先",
+        "effects": { "growthScore": 70, "relationships": { "coach": 8, "teammates": 5 } },
+        "consequenceText": "教练很满意，但部分球迷觉得你格局小。"
+      },
+      {
+        "id": "c",
+        "text": "对外保持沉默",
+        "effects": { "growthScore": 50, "relationships": { "media": -3 } },
+        "consequenceText": "传闻发酵又降温，一切回到原点。"
+      }
+    ]
+  }
+]

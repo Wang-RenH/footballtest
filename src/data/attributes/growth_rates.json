@@ -1,0 +1,8 @@
+{
+  "enlightenment": { "minAge": 3, "maxAge": 6, "attrGainMult": 0.15, "eventsPerYear": 2 },
+  "youth": { "minAge": 7, "maxAge": 12, "attrGainMult": 0.45, "eventsPerYear": 2 },
+  "academy": { "minAge": 13, "maxAge": 17, "attrGainMult": 1.2, "eventsPerYear": 4 },
+  "pro_early": { "minAge": 18, "maxAge": 22, "attrGainMult": 1.0, "eventsPerYear": 0 },
+  "prime": { "minAge": 23, "maxAge": 33, "attrGainMult": 0.55, "eventsPerYear": 0 },
+  "late": { "minAge": 34, "maxAge": 38, "attrGainMult": -0.35, "eventsPerYear": 0 }
+}

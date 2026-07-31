@@ -1,0 +1,107 @@
+[
+  {
+    "id": "AGE_34_DECLINE_001",
+    "ageRange": [34, 36],
+    "category": "life",
+    "narrative": "体检报告摆在桌上：爆发力下降、恢复变慢。教练委婉地说：「你可能要适应轮换角色。」",
+    "options": [
+      {
+        "id": "a",
+        "text": "接受现实做好替补",
+        "effects": { "growthScore": 80, "relationships": { "coach": 6, "teammates": 5 }, "morale": -5, "hiddenAttributes": { "leadership": 2 } },
+        "consequenceText": "你转型成更衣室领袖，年轻人很敬重你。"
+      },
+      {
+        "id": "b",
+        "text": "加练证明自己还能踢",
+        "effects": { "attributes": { "PHY": 1 }, "growthScore": 60, "fatigue": 20, "injuryRisk": 20 },
+        "consequenceText": "偶有高光，但伤病风险也明显升高。"
+      },
+      {
+        "id": "c",
+        "text": "抱怨教练不公",
+        "effects": { "growthScore": 10, "relationships": { "coach": -12, "teammates": -5 }, "morale": -10 },
+        "consequenceText": "气氛恶化，出场时间更少了。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_35_MENTOR_001",
+    "ageRange": [34, 37],
+    "category": "social",
+    "narrative": "一位十八岁新援总来问你问题。教练希望你带带他，也暗示这可能影响你的出场。",
+    "options": [
+      {
+        "id": "a",
+        "text": "全力培养后辈",
+        "effects": { "growthScore": 120, "relationships": { "teammates": 10, "coach": 8 }, "hiddenAttributes": { "leadership": 2 }, "morale": 5 },
+        "consequenceText": "新援成长很快，俱乐部称你是「活教材」。"
+      },
+      {
+        "id": "b",
+        "text": "保持距离保护位置",
+        "effects": { "growthScore": 30, "relationships": { "teammates": -4 }, "morale": -3 },
+        "consequenceText": "你守住了轮换席，却少了些尊重。"
+      },
+      {
+        "id": "c",
+        "text": "有选择地传授经验",
+        "effects": { "growthScore": 80, "relationships": { "teammates": 5 }, "hiddenAttributes": { "leadership": 1 } },
+        "consequenceText": "分寸拿捏得不错，双方都还过得去。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_36_RETIRE_TALK_001",
+    "ageRange": [36, 38],
+    "category": "life",
+    "isKeyEvent": true,
+    "narrative": "经纪人约你吃饭，开门见山：「要不要考虑退役？俱乐部可以给你一场欢送赛。」",
+    "options": [
+      {
+        "id": "a",
+        "text": "宣布退役，完美谢幕",
+        "effects": { "growthScore": 200, "morale": 10, "relationships": { "fans": 15, "media": 10 } },
+        "consequenceText": "你选择在掌声中离开绿茵场。"
+      },
+      {
+        "id": "b",
+        "text": "再踢一年",
+        "effects": { "growthScore": 60, "attributes": { "PAC": -1, "PHY": -1 }, "injuryRisk": 15, "morale": 5 },
+        "consequenceText": "你决定再拼一个赛季，不留遗憾。"
+      },
+      {
+        "id": "c",
+        "text": "转去低级别联赛延长生涯",
+        "effects": { "funds": -10000, "growthScore": 90, "relationships": { "media": -5 }, "morale": 3 },
+        "consequenceText": "舞台变小了，但你还能每周比赛。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_37_LEGACY_001",
+    "ageRange": [35, 38],
+    "category": "family",
+    "narrative": "孩子问你：「爸爸，足球是不是最重要的？」你看着柜上的球衣，一时不知怎么回答。",
+    "options": [
+      {
+        "id": "a",
+        "text": "说家人永远第一",
+        "effects": { "growthScore": 100, "relationships": { "father": 5, "mother": 5 }, "morale": 10 },
+        "consequenceText": "家里的氛围柔和了许多。"
+      },
+      {
+        "id": "b",
+        "text": "说足球是梦想也是责任",
+        "effects": { "growthScore": 80, "morale": 5, "hiddenAttributes": { "professionalism": 1 } },
+        "consequenceText": "孩子似懂非懂，但眼里有光。"
+      },
+      {
+        "id": "c",
+        "text": "含糊带过去训练",
+        "effects": { "growthScore": 20, "morale": -5 },
+        "consequenceText": "你逃开了问题，心里却一直惦记。"
+      }
+    ]
+  }
+]

@@ -1,0 +1,159 @@
+[
+  {
+    "id": "AGE_18_DEBUT_001",
+    "ageRange": [18, 19],
+    "category": "match",
+    "isKeyEvent": true,
+    "narrative": "球员通道里，心跳如鼓。教练拍拍你的肩：「准备好了吗？今晚你首发。」这是你的职业首秀。",
+    "options": [
+      {
+        "id": "a",
+        "text": "「我准备好了！」",
+        "effects": { "morale": 10, "growthScore": 120, "hiddenAttributes": { "composure": 1 }, "attributes": { "PHY": 1 } },
+        "consequenceText": "自信溢于言表，首秀表现超出预期。"
+      },
+      {
+        "id": "b",
+        "text": "紧张得说不出话",
+        "effects": { "morale": -5, "growthScore": 40, "fatigue": 5 },
+        "consequenceText": "开场前二十分钟你几乎看不见传球路线。"
+      },
+      {
+        "id": "c",
+        "text": "做深呼吸调整状态",
+        "effects": { "morale": 5, "growthScore": 90, "hiddenAttributes": { "composure": 2 } },
+        "consequenceText": "你逐渐进入比赛，踢得越来越从容。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_19_LOAN_001",
+    "ageRange": [19, 21],
+    "category": "opportunity",
+    "narrative": "出场时间寥寥。助教私下说：「要不要去低一级联赛租借锻炼？那边能保证主力。」",
+    "options": [
+      {
+        "id": "a",
+        "text": "同意租借锻炼",
+        "effects": { "attributes": { "PAC": 1, "SHO": 1, "PHY": 2 }, "growthScore": 100, "relationships": { "media": -3 }, "morale": 5 },
+        "consequenceText": "租借期你踢满了比赛，技术明显成熟。"
+      },
+      {
+        "id": "b",
+        "text": "留下竞争主力",
+        "effects": { "growthScore": 50, "relationships": { "coach": 3 }, "morale": -5, "fatigue": -5 },
+        "consequenceText": "板凳坐得发烫，但你没放弃。"
+      },
+      {
+        "id": "c",
+        "text": "要求转会离开",
+        "effects": { "growthScore": 60, "relationships": { "coach": -10, "teammates": -5 }, "funds": 5000 },
+        "consequenceText": "俱乐部不高兴，更衣室也开始疏远你。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_20_MEDIA_001",
+    "ageRange": [18, 22],
+    "category": "social",
+    "narrative": "一场胜利后，记者把话筒怼到你面前：「谈谈今晚的表现？对教练战术有什么看法？」",
+    "options": [
+      {
+        "id": "a",
+        "text": "谦虚归功团队",
+        "effects": { "relationships": { "teammates": 6, "media": 5, "coach": 4 }, "growthScore": 70 },
+        "consequenceText": "更衣室气氛更好了，球迷也喜欢你。"
+      },
+      {
+        "id": "b",
+        "text": "大胆批评战术",
+        "effects": { "relationships": { "coach": -12, "media": 8 }, "growthScore": 20, "morale": -5 },
+        "consequenceText": "标题党写满了「新星炮轰教练」，你压力倍增。"
+      },
+      {
+        "id": "c",
+        "text": "简单应付几句",
+        "effects": { "relationships": { "media": -2 }, "growthScore": 30 },
+        "consequenceText": "记者觉得你没料，报道草草带过。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_21_SALARY_001",
+    "ageRange": [20, 22],
+    "category": "opportunity",
+    "narrative": "合同续约窗口打开。俱乐部开出中等涨幅，经纪人却说外面有更高报价。",
+    "options": [
+      {
+        "id": "a",
+        "text": "忠诚续约",
+        "effects": { "funds": 30000, "growthScore": 90, "relationships": { "coach": 8, "fans": 10 }, "morale": 8 },
+        "consequenceText": "球迷打出「自己人」的横幅，你很感动。"
+      },
+      {
+        "id": "b",
+        "text": "要价更高",
+        "effects": { "funds": 60000, "growthScore": 50, "relationships": { "fans": -8, "coach": -4 } },
+        "consequenceText": "钱到手了，但舆论开始说你「太现实」。"
+      },
+      {
+        "id": "c",
+        "text": "暗示想走",
+        "effects": { "growthScore": 40, "relationships": { "coach": -10, "teammates": -6 }, "morale": -5 },
+        "consequenceText": "转会传闻满天飞，训练氛围变得微妙。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_22_DERBY_001",
+    "ageRange": [18, 22],
+    "category": "match",
+    "narrative": "德比战前夜，球迷在酒店外唱歌。教练问你：「关键战，你想怎么踢？」",
+    "options": [
+      {
+        "id": "a",
+        "text": "全力进攻博名场面",
+        "effects": { "attributes": { "SHO": 1, "PAC": 1 }, "growthScore": 100, "fatigue": 15, "injuryRisk": 8 },
+        "consequenceText": "你成为德比焦点，无论结果如何都被记住。"
+      },
+      {
+        "id": "b",
+        "text": "稳守职责听指挥",
+        "effects": { "growthScore": 80, "relationships": { "coach": 6 }, "hiddenAttributes": { "professionalism": 1 } },
+        "consequenceText": "你完成了教练布置的任务，评价稳中有升。"
+      },
+      {
+        "id": "c",
+        "text": "刻意避战保护身体",
+        "effects": { "growthScore": 10, "relationships": { "fans": -10, "teammates": -5 }, "morale": -8 },
+        "consequenceText": "球迷嘘声响起，队友看你的眼神变了。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_20_FAMILY_001",
+    "ageRange": [18, 22],
+    "category": "family",
+    "narrative": "父亲打来电话：家里有些周转困难。他没明说要钱，但沉默里全是期待。",
+    "options": [
+      {
+        "id": "a",
+        "text": "立刻汇一笔钱回家",
+        "effects": { "funds": -15000, "relationships": { "father": 12, "mother": 8 }, "growthScore": 80, "morale": 5 },
+        "consequenceText": "父母在电话那头哽咽，你觉得踢得更有劲。"
+      },
+      {
+        "id": "b",
+        "text": "量力给一点",
+        "effects": { "funds": -5000, "relationships": { "father": 5 }, "growthScore": 50 },
+        "consequenceText": "家里说够了，让你别耽误训练。"
+      },
+      {
+        "id": "c",
+        "text": "推说最近手头紧",
+        "effects": { "relationships": { "father": -8, "mother": -5 }, "growthScore": 10, "morale": -5 },
+        "consequenceText": "电话匆匆挂断，你心里不是滋味。"
+      }
+    ]
+  }
+]

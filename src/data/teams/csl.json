@@ -1,0 +1,242 @@
+[
+  {
+    "id": "csl_01",
+    "name": "海港风暴",
+    "shortName": "海港",
+    "city": "上海",
+    "league": "CSL",
+    "reputation": 88,
+    "youthAcademy": 82,
+    "strength": 86,
+    "colors": {
+      "primary": "#1a3a6b",
+      "secondary": "#e8b84a"
+    },
+    "country": "中国"
+  },
+  {
+    "id": "csl_02",
+    "name": "京华雄狮",
+    "shortName": "京华",
+    "city": "北京",
+    "league": "CSL",
+    "reputation": 85,
+    "youthAcademy": 80,
+    "strength": 84,
+    "colors": {
+      "primary": "#c41e3a",
+      "secondary": "#ffffff"
+    },
+    "country": "中国"
+  },
+  {
+    "id": "csl_03",
+    "name": "珠江红焰",
+    "shortName": "珠江",
+    "city": "广州",
+    "league": "CSL",
+    "reputation": 80,
+    "youthAcademy": 78,
+    "strength": 80,
+    "colors": {
+      "primary": "#e6392b",
+      "secondary": "#1a1a1a"
+    },
+    "country": "中国"
+  },
+  {
+    "id": "csl_04",
+    "name": "锦城青云",
+    "shortName": "锦城",
+    "city": "成都",
+    "league": "CSL",
+    "reputation": 78,
+    "youthAcademy": 75,
+    "strength": 79,
+    "colors": {
+      "primary": "#2d6a4f",
+      "secondary": "#ffffff"
+    },
+    "country": "中国"
+  },
+  {
+    "id": "csl_05",
+    "name": "山城飞虎",
+    "shortName": "山城",
+    "city": "重庆",
+    "league": "CSL",
+    "reputation": 72,
+    "youthAcademy": 70,
+    "strength": 74,
+    "colors": {
+      "primary": "#f4a261",
+      "secondary": "#1d3557"
+    },
+    "country": "中国"
+  },
+  {
+    "id": "csl_06",
+    "name": "齐鲁铁骑",
+    "shortName": "齐鲁",
+    "city": "济南",
+    "league": "CSL",
+    "reputation": 76,
+    "youthAcademy": 74,
+    "strength": 77,
+    "colors": {
+      "primary": "#f77f00",
+      "secondary": "#003049"
+    },
+    "country": "中国"
+  },
+  {
+    "id": "csl_07",
+    "name": "滨海蓝鲸",
+    "shortName": "滨海",
+    "city": "青岛",
+    "league": "CSL",
+    "reputation": 70,
+    "youthAcademy": 72,
+    "strength": 72,
+    "colors": {
+      "primary": "#0077b6",
+      "secondary": "#ffffff"
+    },
+    "country": "中国"
+  },
+  {
+    "id": "csl_08",
+    "name": "辽东猛虎",
+    "shortName": "辽东",
+    "city": "大连",
+    "league": "CSL",
+    "reputation": 74,
+    "youthAcademy": 76,
+    "strength": 75,
+    "colors": {
+      "primary": "#023e8a",
+      "secondary": "#caf0f8"
+    },
+    "country": "中国"
+  },
+  {
+    "id": "csl_09",
+    "name": "钱塘潮",
+    "shortName": "钱塘",
+    "city": "杭州",
+    "league": "CSL",
+    "reputation": 73,
+    "youthAcademy": 71,
+    "strength": 73,
+    "colors": {
+      "primary": "#2b2d42",
+      "secondary": "#ef233c"
+    },
+    "country": "中国"
+  },
+  {
+    "id": "csl_10",
+    "name": "江城鹤",
+    "shortName": "江城",
+    "city": "武汉",
+    "league": "CSL",
+    "reputation": 71,
+    "youthAcademy": 69,
+    "strength": 71,
+    "colors": {
+      "primary": "#ff6b35",
+      "secondary": "#1a1a2e"
+    },
+    "country": "中国"
+  },
+  {
+    "id": "csl_11",
+    "name": "长安金戈",
+    "shortName": "长安",
+    "city": "西安",
+    "league": "CSL",
+    "reputation": 68,
+    "youthAcademy": 67,
+    "strength": 69,
+    "colors": {
+      "primary": "#bc6c25",
+      "secondary": "#fefae0"
+    },
+    "country": "中国"
+  },
+  {
+    "id": "csl_12",
+    "name": "闽南浪",
+    "shortName": "闽南",
+    "city": "厦门",
+    "league": "CSL",
+    "reputation": 66,
+    "youthAcademy": 68,
+    "strength": 67,
+    "colors": {
+      "primary": "#00b4d8",
+      "secondary": "#03045e"
+    },
+    "country": "中国"
+  },
+  {
+    "id": "csl_13",
+    "name": "津门卫",
+    "shortName": "津门",
+    "city": "天津",
+    "league": "CSL",
+    "reputation": 69,
+    "youthAcademy": 65,
+    "strength": 70,
+    "colors": {
+      "primary": "#9b2226",
+      "secondary": "#ffffff"
+    },
+    "country": "中国"
+  },
+  {
+    "id": "csl_14",
+    "name": "江南绿茵",
+    "shortName": "江南",
+    "city": "苏州",
+    "league": "CSL",
+    "reputation": 67,
+    "youthAcademy": 73,
+    "strength": 68,
+    "colors": {
+      "primary": "#40916c",
+      "secondary": "#d8f3dc"
+    },
+    "country": "中国"
+  },
+  {
+    "id": "csl_15",
+    "name": "云岭鹰",
+    "shortName": "云岭",
+    "city": "昆明",
+    "league": "CSL",
+    "reputation": 64,
+    "youthAcademy": 66,
+    "strength": 65,
+    "colors": {
+      "primary": "#6a994e",
+      "secondary": "#386641"
+    },
+    "country": "中国"
+  },
+  {
+    "id": "csl_16",
+    "name": "塞上狼",
+    "shortName": "塞上",
+    "city": "银川",
+    "league": "CSL",
+    "reputation": 62,
+    "youthAcademy": 60,
+    "strength": 63,
+    "colors": {
+      "primary": "#495057",
+      "secondary": "#f8f9fa"
+    },
+    "country": "中国"
+  }
+]

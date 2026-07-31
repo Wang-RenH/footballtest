@@ -1,0 +1,310 @@
+[
+  {
+    "id": "AGE_07_PE_001",
+    "ageRange": [
+      7,
+      8
+    ],
+    "category": "training",
+    "narrative": "体育课上，老师第一次正式教你们运球绕杆。你笨拙地拨着球，同学们有的笑有的加油。",
+    "options": [
+      {
+        "id": "a",
+        "text": "认真跟着练",
+        "effects": {
+          "interest": 6,
+          "attributes": {
+            "DRI": 2
+          },
+          "growthScore": 60
+        },
+        "consequenceText": "课后老师私下说：你可以去试试校队。"
+      },
+      {
+        "id": "b",
+        "text": "偷懒聊天",
+        "effects": {
+          "interest": -3,
+          "growthScore": 5
+        },
+        "consequenceText": "你错过了一次被教练注意的机会。"
+      },
+      {
+        "id": "c",
+        "text": "课后留下来加练",
+        "effects": {
+          "interest": 10,
+          "attributes": {
+            "DRI": 3,
+            "PHY": 1
+          },
+          "growthScore": 90,
+          "fatigue": 8
+        },
+        "consequenceText": "夕阳下的操场，只剩你一个人在绕杆。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_08_TRIAL_001",
+    "ageRange": [
+      8,
+      9
+    ],
+    "category": "opportunity",
+    "narrative": "学校贴出了校队选拔告示。名额有限，竞争激烈。你在告示栏前站了很久。",
+    "options": [
+      {
+        "id": "a",
+        "text": "报名参加选拔",
+        "effects": {
+          "interest": 8,
+          "attributes": {
+            "PAC": 1,
+            "PHY": 1
+          },
+          "growthScore": 100,
+          "morale": 5
+        },
+        "consequenceText": "经过几轮测试，你成功进入校队！"
+      },
+      {
+        "id": "b",
+        "text": "怕失败不敢报",
+        "effects": {
+          "interest": -5,
+          "growthScore": 10,
+          "morale": -5
+        },
+        "consequenceText": "你看着同学们穿上校队球衣，心里有些不是滋味。"
+      },
+      {
+        "id": "c",
+        "text": "先偷偷去看别人试训",
+        "effects": {
+          "interest": 3,
+          "growthScore": 30
+        },
+        "consequenceText": "你摸清了选拔套路，决定下周再试。"
+      }
+    ],
+    "once": true,
+    "isKeyEvent": true
+  },
+  {
+    "id": "AGE_09_SPORTS_SCHOOL_001",
+    "ageRange": [
+      9,
+      10
+    ],
+    "category": "opportunity",
+    "narrative": "区体校的教练来看比赛，赛后拉住你父母：「这孩子有苗子，来体校吧。」",
+    "options": [
+      {
+        "id": "a",
+        "text": "去体校（家庭资金减少）",
+        "effects": {
+          "funds": -8000,
+          "attributes": {
+            "PAC": 2,
+            "PHY": 2,
+            "DRI": 1
+          },
+          "growthScore": 150,
+          "potential": 3,
+          "interest": 10
+        },
+        "consequenceText": "你开始了更系统的训练，学业压力也随之而来。"
+      },
+      {
+        "id": "b",
+        "text": "留在普通学校",
+        "effects": {
+          "interest": 2,
+          "growthScore": 40,
+          "relationships": {
+            "mother": 5
+          }
+        },
+        "consequenceText": "你继续周末踢球，生活节奏更轻松。"
+      },
+      {
+        "id": "c",
+        "text": "争取足球特色小学",
+        "effects": {
+          "funds": -15000,
+          "attributes": {
+            "PAS": 2,
+            "DRI": 2
+          },
+          "growthScore": 180,
+          "potential": 4,
+          "interest": 12
+        },
+        "consequenceText": "学费不菲，但青训资源明显更好。"
+      }
+    ],
+    "once": true,
+    "isKeyEvent": true
+  },
+  {
+    "id": "AGE_10_FIRST_MATCH_001",
+    "ageRange": [
+      10,
+      11
+    ],
+    "category": "match",
+    "narrative": "你代表学校参加区级联赛。开场哨响，对手比你们壮一圈。",
+    "options": [
+      {
+        "id": "a",
+        "text": "主动要球冲击",
+        "effects": {
+          "attributes": {
+            "SHO": 2,
+            "PAC": 1
+          },
+          "growthScore": 80,
+          "morale": 8,
+          "fatigue": 10
+        },
+        "consequenceText": "你打进关键球，教练在场边狂吼你的名字。"
+      },
+      {
+        "id": "b",
+        "text": "稳妥传球配合",
+        "effects": {
+          "attributes": {
+            "PAS": 2
+          },
+          "growthScore": 70,
+          "relationships": {
+            "teammates": 5
+          }
+        },
+        "consequenceText": "团队配合流畅，虽然没进球，但助攻了一次。"
+      },
+      {
+        "id": "c",
+        "text": "紧张得缩在后场",
+        "effects": {
+          "morale": -8,
+          "growthScore": 15,
+          "interest": -3
+        },
+        "consequenceText": "比赛踢砸了，你需要重新找回信心。"
+      }
+    ],
+    "once": true,
+    "isKeyEvent": true
+  },
+  {
+    "id": "AGE_11_STUDY_001",
+    "ageRange": [
+      11,
+      12
+    ],
+    "category": "life",
+    "narrative": "期中考试成绩下滑，班主任约谈了家长：「再这样踢球，升学要受影响。」",
+    "options": [
+      {
+        "id": "a",
+        "text": "减少训练保学业",
+        "effects": {
+          "interest": -8,
+          "growthScore": 30,
+          "relationships": {
+            "mother": 6,
+            "father": 2
+          },
+          "attributes": {
+            "PAC": -1
+          }
+        },
+        "consequenceText": "成绩回升了，但足球感觉有些生疏。"
+      },
+      {
+        "id": "b",
+        "text": "坚持训练",
+        "effects": {
+          "interest": 5,
+          "attributes": {
+            "PHY": 2,
+            "DRI": 1
+          },
+          "growthScore": 90,
+          "relationships": {
+            "mother": -4
+          },
+          "morale": -3
+        },
+        "consequenceText": "家里吵了一架，但你没有放下足球。"
+      },
+      {
+        "id": "c",
+        "text": "请家教兼顾两边",
+        "effects": {
+          "funds": -5000,
+          "interest": 3,
+          "growthScore": 100,
+          "fatigue": 12
+        },
+        "consequenceText": "又累又贵，但学业和足球暂时都稳住了。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_12_ACADEMY_001",
+    "ageRange": [
+      12,
+      12
+    ],
+    "category": "opportunity",
+    "isKeyEvent": true,
+    "narrative": "职业俱乐部青训营开放试训。这是迈向职业的第一道大门——你紧张得几乎睡不着。",
+    "options": [
+      {
+        "id": "a",
+        "text": "全力表现冲击名额",
+        "effects": {
+          "attributes": {
+            "PAC": 2,
+            "SHO": 1,
+            "DRI": 2,
+            "PHY": 1
+          },
+          "growthScore": 200,
+          "potential": 5,
+          "interest": 15,
+          "fatigue": 15
+        },
+        "consequenceText": "你通过了试训，正式进入俱乐部梯队！"
+      },
+      {
+        "id": "b",
+        "text": "正常发挥就好",
+        "effects": {
+          "attributes": {
+            "PAS": 1,
+            "DRI": 1
+          },
+          "growthScore": 120,
+          "potential": 2,
+          "interest": 8
+        },
+        "consequenceText": "表现中规中矩，进入了二梯队观察名单。"
+      },
+      {
+        "id": "c",
+        "text": "因压力过大发挥失常",
+        "effects": {
+          "morale": -10,
+          "growthScore": 40,
+          "interest": -5
+        },
+        "consequenceText": "这次没过，但教练说你可以明年再来。"
+      }
+    ],
+    "once": true
+  }
+]

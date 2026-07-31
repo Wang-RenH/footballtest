@@ -1,0 +1,132 @@
+[
+  {
+    "id": "AGE_03_TV_001",
+    "ageRange": [3, 4],
+    "category": "life",
+    "narrative": "客厅电视里正在转播一场足球比赛，绿茵场上的球员飞奔射门。你趴在沙发上，眼睛一眨不眨。",
+    "options": [
+      {
+        "id": "a",
+        "text": "目不转睛盯着看",
+        "effects": { "interest": 8, "growthScore": 40, "relationships": { "father": 2 } },
+        "consequenceText": "足球的种子悄悄埋进了心里。"
+      },
+      {
+        "id": "b",
+        "text": "跑去玩积木",
+        "effects": { "interest": -2, "growthScore": 5 },
+        "consequenceText": "你对球类暂时没什么兴趣。"
+      },
+      {
+        "id": "c",
+        "text": "拉着爸爸问这是什么",
+        "effects": { "interest": 5, "relationships": { "father": 5 }, "growthScore": 35 },
+        "consequenceText": "爸爸笑着给你讲起了足球。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_03_YARD_001",
+    "ageRange": [3, 5],
+    "category": "life",
+    "narrative": "小区空地上，大孩子们正踢着一个破皮球。球滚到你脚边，他们朝你招手。",
+    "options": [
+      {
+        "id": "a",
+        "text": "凑过去捡球传回去",
+        "effects": { "interest": 10, "growthScore": 50 },
+        "consequenceText": "大孩子们夸你「传得还挺准」。"
+      },
+      {
+        "id": "b",
+        "text": "怕生躲到妈妈身后",
+        "effects": { "interest": 0, "relationships": { "mother": 3 }, "growthScore": 10 },
+        "consequenceText": "妈妈摸摸你的头，说以后再玩也不迟。"
+      },
+      {
+        "id": "c",
+        "text": "让爸爸带你一起踢",
+        "effects": { "interest": 7, "relationships": { "father": 6 }, "growthScore": 45 },
+        "consequenceText": "父子俩在夕阳下踢起了小皮球。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_04_DAD_ASK_001",
+    "ageRange": [4, 6],
+    "category": "family",
+    "narrative": "晚饭后，爸爸蹲下来认真问你：「要不要去学踢球？」妈妈在一旁看着你。",
+    "options": [
+      {
+        "id": "a",
+        "text": "大声说要！",
+        "effects": { "interest": 15, "relationships": { "father": 8, "mother": 3 }, "growthScore": 80, "potential": 2 },
+        "consequenceText": "家里决定给你报一个少儿足球兴趣班。"
+      },
+      {
+        "id": "b",
+        "text": "犹豫不决",
+        "effects": { "interest": 3, "growthScore": 20 },
+        "consequenceText": "爸爸说先带你去看看再说。"
+      },
+      {
+        "id": "c",
+        "text": "摇头说想学画画",
+        "effects": { "interest": -5, "relationships": { "mother": 4 }, "growthScore": 5 },
+        "consequenceText": "足球之路暂时搁浅，但门还没关死。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_05_BALL_001",
+    "ageRange": [5, 6],
+    "category": "training",
+    "narrative": "生日那天，你收到一个新足球。你迫不及待地冲到客厅开始颠球——当然，颠不起来。",
+    "options": [
+      {
+        "id": "a",
+        "text": "坚持练到天黑",
+        "effects": { "interest": 8, "attributes": { "DRI": 1 }, "growthScore": 60, "fatigue": 5 },
+        "consequenceText": "小腿酸了，但你觉得自己离「球星」近了一步。"
+      },
+      {
+        "id": "b",
+        "text": "踢两下就去看电视",
+        "effects": { "interest": 2, "growthScore": 15 },
+        "consequenceText": "新球很快被扔到了角落。"
+      },
+      {
+        "id": "c",
+        "text": "拉着邻居小朋友一起踢",
+        "effects": { "interest": 6, "morale": 5, "growthScore": 45 },
+        "consequenceText": "你们约定以后每周都来踢球。"
+      }
+    ]
+  },
+  {
+    "id": "AGE_06_MATCH_001",
+    "ageRange": [5, 6],
+    "category": "match",
+    "narrative": "幼儿园运动会安排了趣味足球赛。老师把你分到了前锋位置，你紧张得手心出汗。",
+    "options": [
+      {
+        "id": "a",
+        "text": "勇敢冲上去抢球",
+        "effects": { "interest": 10, "attributes": { "PAC": 1 }, "growthScore": 70, "morale": 5 },
+        "consequenceText": "你踢进了一个「幼儿园级」进球，全班欢呼。"
+      },
+      {
+        "id": "b",
+        "text": "站在原地等球过来",
+        "effects": { "interest": 2, "growthScore": 20 },
+        "consequenceText": "比赛结束了，你几乎没碰到球。"
+      },
+      {
+        "id": "c",
+        "text": "把球分给队友",
+        "effects": { "interest": 5, "attributes": { "PAS": 1 }, "growthScore": 55, "relationships": { "teammates": 3 } },
+        "consequenceText": "老师夸你懂得分享，队友们围过来拍你肩膀。"
+      }
+    ]
+  }
+]

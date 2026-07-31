@@ -1,0 +1,98 @@
+[
+  {
+    "id": "epl_01",
+    "name": "伦敦蓝月",
+    "shortName": "蓝月",
+    "city": "伦敦",
+    "country": "英格兰",
+    "league": "EPL",
+    "reputation": 96,
+    "youthAcademy": 90,
+    "strength": 94,
+    "colors": { "primary": "#6CABDD", "secondary": "#1C2C5B" }
+  },
+  {
+    "id": "epl_02",
+    "name": "曼彻斯特红魔",
+    "shortName": "红魔",
+    "city": "曼彻斯特",
+    "country": "英格兰",
+    "league": "EPL",
+    "reputation": 95,
+    "youthAcademy": 88,
+    "strength": 92,
+    "colors": { "primary": "#DA291C", "secondary": "#FBE122" }
+  },
+  {
+    "id": "epl_03",
+    "name": "利物浦红军",
+    "shortName": "红军",
+    "city": "利物浦",
+    "country": "英格兰",
+    "league": "EPL",
+    "reputation": 95,
+    "youthAcademy": 86,
+    "strength": 93,
+    "colors": { "primary": "#C8102E", "secondary": "#00B2A9" }
+  },
+  {
+    "id": "laliga_01",
+    "name": "马德里银河",
+    "shortName": "银河",
+    "city": "马德里",
+    "country": "西班牙",
+    "league": "LaLiga",
+    "reputation": 98,
+    "youthAcademy": 92,
+    "strength": 96,
+    "colors": { "primary": "#FFFFFF", "secondary": "#FEBE10" }
+  },
+  {
+    "id": "laliga_02",
+    "name": "巴塞罗那加泰",
+    "shortName": "加泰",
+    "city": "巴塞罗那",
+    "country": "西班牙",
+    "league": "LaLiga",
+    "reputation": 97,
+    "youthAcademy": 95,
+    "strength": 94,
+    "colors": { "primary": "#A50044", "secondary": "#004D98" }
+  },
+  {
+    "id": "seriea_01",
+    "name": "米兰红黑",
+    "shortName": "红黑",
+    "city": "米兰",
+    "country": "意大利",
+    "league": "SerieA",
+    "reputation": 92,
+    "youthAcademy": 84,
+    "strength": 90,
+    "colors": { "primary": "#FB090B", "secondary": "#000000" }
+  },
+  {
+    "id": "bundes_01",
+    "name": "慕尼黑南方之星",
+    "shortName": "南星",
+    "city": "慕尼黑",
+    "country": "德国",
+    "league": "Bundesliga",
+    "reputation": 94,
+    "youthAcademy": 91,
+    "strength": 93,
+    "colors": { "primary": "#DC052D", "secondary": "#FFFFFF" }
+  },
+  {
+    "id": "ligue1_01",
+    "name": "巴黎塞纳",
+    "shortName": "塞纳",
+    "city": "巴黎",
+    "country": "法国",
+    "league": "Ligue1",
+    "reputation": 93,
+    "youthAcademy": 85,
+    "strength": 91,
+    "colors": { "primary": "#004170", "secondary": "#DA291C" }
+  }
+]
