@@ -79,7 +79,7 @@ export function SettingsScreen() {
 
       <div className="panel mt-5 space-y-4 p-4">
         <h3 className="text-sm tracking-widest text-white/40">AI 叙事引擎</h3>
-        <p className="text-xs text-[#f0d78c]/网页版 7.31-proxy · 跨域代理已内置</p>
+        <p className="text-xs" style={{ color: '#f0d78c' }}>网页版 731-proxy · 跨域代理已内置</p>
         <p className="text-xs text-white/45">
           Key 仅存本机。手机一般不用改代理；电脑本地用{' '}
           <code className="text-[#f0d78c]">npm run dev</code> 即可。
