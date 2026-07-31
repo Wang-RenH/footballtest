@@ -15,6 +15,7 @@ import age2333 from '@/data/events/age_23_33.json'
 import age3440 from '@/data/events/age_34_40.json'
 import { applyAttrDelta, ATTR_LABELS } from '@/core/AttributeEngine'
 import { teamName } from '@/core/LeagueEngine'
+import { rollInjuryChance } from '@/core/InjuryEngine'
 import { clamp, pickRandom, uid } from '@/utils/random'
 
 const RAW = [
@@ -199,14 +200,13 @@ export function applyEventOption(
   if (effects.potential != null) next.potential = clamp(next.potential + effects.potential, 40, 99)
 
   if (effects.injuryRisk != null && effects.injuryRisk > 0) {
-    const risk = effects.injuryRisk / 100 + next.hiddenAttributes.injuryProneness * 0.01
-    if (Math.random() < risk) {
-      next.injury = {
-        name: '肌肉拉伤',
-        weeksLeft: 2 + Math.floor(Math.random() * 3),
-        attrPenalty: { PAC: -2, PHY: -1 },
+    const rolled = rollInjuryChance(next, effects.injuryRisk / 100)
+    next = rolled.player
+    if (rolled.note) {
+      return {
+        player: next,
+        consequence: `${option.consequenceText ?? '选择已生效。'} ${rolled.note}`,
       }
-      next.morale = clamp(next.morale - 8, 0, 100)
     }
   }
 
@@ -331,7 +331,7 @@ export function buildPostMatchEvent(
         id: 'e',
         text: '加练到深夜，赌下一场首发',
         consequenceText: '你留下加练，风险与回报一并上升。',
-        effects: { growthScore: 40, fatigue: 16, interest: 3 },
+        effects: { growthScore: 40, fatigue: 16, interest: 3, injuryRisk: 28 },
       },
     ],
   }

@@ -261,6 +261,19 @@ export interface SeasonBoardRow {
   ratingSum: number
 }
 
+export interface NationalFixture {
+  /** 如 2026年3月 第2周 */
+  dateLabel: string
+  year: number
+  month: number
+  week: number
+  opponent: string
+  competition: string
+  venue: '主场' | '客场' | '中立场'
+  status: 'upcoming' | 'played' | 'skipped'
+  result?: string
+}
+
 export interface InternationalState {
   nationName: string
   caps: number
@@ -275,6 +288,12 @@ export interface InternationalState {
   provisionalSquad: string[]
   finalSquad: string[] | null
   lastAnnouncement: string | null
+  /** 集训报到时间 */
+  campReportLabel: string | null
+  /** 集训结束/归队 */
+  campReturnLabel: string | null
+  /** 窗口内国家队比赛 */
+  fixtures: NationalFixture[]
 }
 
 export interface SeasonState {

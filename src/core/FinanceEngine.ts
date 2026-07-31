@@ -41,9 +41,10 @@ export function getTransferWindow(time: GameTime): 'winter' | 'summer' | null {
 }
 
 export function livingCostWeekly(player: Player): number {
-  const cityBoost = player.currentTeamId ? 400 : 200
-  const lifestyle = 200 + player.age * 15 + Math.floor(player.funds / 80000) * 100
-  return cityBoost + lifestyle
+  const cityBoost = player.currentTeamId ? 900 : 350
+  const lifestyle = 400 + player.age * 25 + Math.floor(player.funds / 50000) * 150
+  const injuryCare = player.injury ? 600 : 0
+  return cityBoost + lifestyle + injuryCare
 }
 
 export interface FinanceWeekResult {
@@ -81,9 +82,9 @@ export function applyWeeklyFinance(player: Player, _time: GameTime): FinanceWeek
   funds -= cost
   lines.push(`生活开销 -¥${cost.toLocaleString()}`)
 
-  // 偶发大事花钱
+  // 偶发大事花钱（提高一点可见度）
   const roll = Math.random()
-  if (roll < 0.03) {
+  if (roll < 0.06) {
     const fine = 3000 + Math.floor(Math.random() * 12000)
     funds -= fine
     lines.push(`突发支出（医疗/罚单/家庭） -¥${fine.toLocaleString()}`)
@@ -92,7 +93,7 @@ export function applyWeeklyFinance(player: Player, _time: GameTime): FinanceWeek
       headline: '钱包告急：一笔意外开销',
       body: `本周额外支出约 ¥${fine.toLocaleString()}，经纪人提醒注意现金流。`,
     }
-  } else if (roll < 0.045) {
+  } else if (roll < 0.09) {
     const legal = 8000 + Math.floor(Math.random() * 20000)
     funds -= legal
     lines.push(`法律纠纷和解金 -¥${legal.toLocaleString()}`)
@@ -102,6 +103,9 @@ export function applyWeeklyFinance(player: Player, _time: GameTime): FinanceWeek
       body: `相关和解金额约 ¥${legal.toLocaleString()}。俱乐部公关建议低调处理。`,
     }
   }
+
+  const net = funds - player.funds
+  lines.unshift(`本周资金净变动 ${net >= 0 ? '+' : ''}¥${net.toLocaleString()}（余额 ¥${Math.max(0, funds).toLocaleString()}）`)
 
   return {
     player: { ...player, funds: Math.max(0, funds) },

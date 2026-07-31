@@ -162,14 +162,24 @@ export function LeagueScreen() {
           ) : (
             <p className="text-xs text-white/40">名单通常在 3/6/9/11 月第 1 周公布。</p>
           )}
+          {intl?.calledUp ? (
+            <div className="rounded bg-white/5 p-3 text-sm text-white/70">
+              <p>报到：{intl.campReportLabel ?? '—'}</p>
+              <p className="mt-1">归队：{intl.campReturnLabel ?? '—'}</p>
+              {(intl.fixtures?.length ?? 0) > 0 ? (
+                <ul className="mt-2 space-y-1 text-xs text-white/55">
+                  {intl.fixtures.map((f) => (
+                    <li key={`${f.dateLabel}-${f.opponent}`}>
+                      {f.dateLabel} · {f.competition} · {f.venue} vs {f.opponent}
+                      {f.status === 'played' && f.result ? ` · ${f.result}` : ' · 待赛'}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
           <div className="rounded bg-white/5 p-3 text-xs leading-relaxed text-white/55">
-            <p>真实路径继续加深中：</p>
-            <ul className="mt-2 list-disc space-y-1 pl-4">
-              <li>世界杯亚洲区预选赛（40强/18强/附加赛）完整对阵</li>
-              <li>亚洲杯及预选赛</li>
-              <li>东亚杯 / 热身赛窗口征召</li>
-              <li>世界杯正赛（若出线）</li>
-            </ul>
+            <p>真实路径继续加深中：完整预选赛积分榜与出线线后续接入。</p>
           </div>
         </div>
       ) : null}

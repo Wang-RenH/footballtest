@@ -3,6 +3,7 @@ import type {
   GameState,
   GameTime,
   InternationalState,
+  NationalFixture,
   Player,
 } from '@/models/types'
 import { NATIONAL_STAR_POOL } from '@/data/chinesePlayers'
@@ -10,11 +11,36 @@ import { getTransferWindow } from '@/core/FinanceEngine'
 import { getWeekCompetition } from '@/core/TimeEngine'
 import { uid } from '@/utils/random'
 
+const ASIA_OPPONENTS = [
+  '日本', '韩国', '澳大利亚', '伊朗', '沙特阿拉伯', '伊拉克',
+  '乌兹别克斯坦', '卡塔尔', '阿联酋', '阿曼', '巴林', '约旦',
+  '泰国', '越南', '印尼', '叙利亚',
+]
+
 export function pushBulletin(
   list: BulletinItem[],
   item: Omit<BulletinItem, 'id'>,
 ): BulletinItem[] {
   return [{ ...item, id: uid('bul') }, ...list].slice(0, 40)
+}
+
+function labelOf(y: number, m: number, w: number) {
+  return `${y}年${m}月 第${w}周`
+}
+
+function advanceCal(y: number, m: number, w: number, addWeeks: number) {
+  let year = y
+  let month = m
+  let week = w + addWeeks
+  while (week > 4) {
+    week -= 4
+    month += 1
+    if (month > 12) {
+      month = 1
+      year += 1
+    }
+  }
+  return { year, month, week }
 }
 
 export function buildWeeklyBulletins(state: GameState): BulletinItem[] {
@@ -58,13 +84,35 @@ export function buildWeeklyBulletins(state: GameState): BulletinItem[] {
     [3, 6, 9, 11].includes(time.month) &&
     time.week === 1
   ) {
+    const nextFix = intl.fixtures?.find((f) => f.status === 'upcoming')
     items.push({
       dateLabel,
       category: 'national',
       headline: intl.lastAnnouncement,
       body: intl.calledUp
-        ? `你已进入大名单。集训名单共 ${intl.provisionalSquad?.length ?? 0} 人：${(intl.provisionalSquad ?? []).slice(0, 8).join('、')}${(intl.provisionalSquad?.length ?? 0) > 8 ? '…' : ''}`
-        : `本期大名单未包含你。继续用联赛表现争取下一期征召。名单热门：${(intl.provisionalSquad ?? []).slice(0, 6).join('、')}`,
+        ? `报到：${intl.campReportLabel ?? '本周'}；归队：${intl.campReturnLabel ?? '窗口结束后'}。${
+            nextFix
+              ? `首场：${nextFix.dateLabel} ${nextFix.venue}对阵${nextFix.opponent}（${nextFix.competition}）。`
+              : ''
+          }名单：${(intl.provisionalSquad ?? []).slice(0, 8).join('、')}…`
+        : `本期大名单未包含你。热门：${(intl.provisionalSquad ?? []).slice(0, 6).join('、')}`,
+    })
+  }
+
+  // 本周若有国家队比赛
+  const todayFix = intl?.fixtures?.find(
+    (f) =>
+      f.year === time.year &&
+      f.month === time.month &&
+      f.week === time.week &&
+      f.status === 'upcoming',
+  )
+  if (todayFix && intl?.calledUp) {
+    items.push({
+      dateLabel,
+      category: 'national',
+      headline: `国家队赛日：${todayFix.venue} vs ${todayFix.opponent}`,
+      body: `${todayFix.competition}。你已入选本期大名单，需随队征战（俱乐部联赛本周可能轮休）。`,
     })
   }
 
@@ -90,30 +138,58 @@ export function rollNationalCamp(
   time: GameTime,
   prev: InternationalState,
 ): InternationalState {
-  // 国字号窗口：约 3/6/9/11 月或世界杯年更频繁
   const windowMonth = [3, 6, 9, 11].includes(time.month)
   if (!windowMonth || time.week !== 1 || player.age < 18) {
+    // 推进本周国家队比赛状态
+    const fixtures = (prev.fixtures ?? []).map((f) => {
+      if (
+        f.status === 'upcoming' &&
+        f.year === time.year &&
+        f.month === time.month &&
+        f.week === time.week &&
+        prev.calledUp
+      ) {
+        const scored = Math.random() < 0.45
+        const gf = scored ? 1 + Math.floor(Math.random() * 2) : Math.floor(Math.random() * 2)
+        const ga = Math.floor(Math.random() * 2)
+        return {
+          ...f,
+          status: 'played' as const,
+          result: `${gf}-${ga}${scored && prev.calledUp ? '（你有出场机会）' : ''}`,
+        }
+      }
+      return f
+    })
+    const capsGain = fixtures.filter(
+      (f, i) =>
+        f.status === 'played' &&
+        prev.fixtures?.[i]?.status === 'upcoming' &&
+        prev.calledUp,
+    ).length
     return {
       ...prev,
-      campStatus: prev.campStatus === 'final' && time.week > 2 ? 'none' : prev.campStatus,
+      fixtures,
+      caps: prev.caps + capsGain,
+      campStatus:
+        prev.campStatus === 'provisional' && time.week >= 4 ? 'none' : prev.campStatus,
+      calledUp: prev.campStatus === 'provisional' && time.week >= 4 ? false : prev.calledUp,
     }
   }
 
   const threshold = prev.stage === 'world_cup' ? 76 : prev.stage === 'asian_cup' ? 71 : 73
-  const formBonus = player.seasonStats.apps >= 5 && player.seasonStats.goals >= 2 ? -3 : 0
-  const called = player.OVR >= threshold + formBonus && player.fatigue < 90 && !player.injury
+  const formBonus =
+    player.seasonStats?.apps >= 5 && player.seasonStats?.goals >= 2 ? -3 : 0
+  const called =
+    player.OVR >= threshold + formBonus && player.fatigue < 90 && !player.injury
 
   const stars = [...NATIONAL_STAR_POOL]
-  // 打乱取 22–28 人
   for (let i = stars.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
     ;[stars[i], stars[j]] = [stars[j]!, stars[i]!]
   }
   const size = 24 + Math.floor(Math.random() * 5)
   let squad = stars.slice(0, size).filter((n) => n !== player.name)
-  if (called) {
-    squad = [player.name, ...squad].slice(0, size)
-  }
+  if (called) squad = [player.name, ...squad].slice(0, size)
 
   const stageWord =
     prev.stage === 'asian_cup'
@@ -122,19 +198,60 @@ export function rollNationalCamp(
         ? '世界杯集训'
         : '国家队集训'
 
+  const report = advanceCal(time.year, time.month, time.week, 0)
+  const match1 = advanceCal(time.year, time.month, time.week, 1)
+  const match2 = advanceCal(time.year, time.month, time.week, 2)
+  const ret = advanceCal(time.year, time.month, time.week, 3)
+
+  const pickOpp = () =>
+    ASIA_OPPONENTS[Math.floor(Math.random() * ASIA_OPPONENTS.length)]!
+
+  const fixtures: NationalFixture[] = called
+    ? [
+        {
+          dateLabel: labelOf(match1.year, match1.month, match1.week),
+          year: match1.year,
+          month: match1.month,
+          week: match1.week,
+          opponent: pickOpp(),
+          competition:
+            prev.stage === 'asian_cup' ? '亚洲杯' : '世界杯亚洲区预选赛',
+          venue: Math.random() < 0.5 ? '主场' : '客场',
+          status: 'upcoming',
+        },
+        {
+          dateLabel: labelOf(match2.year, match2.month, match2.week),
+          year: match2.year,
+          month: match2.month,
+          week: match2.week,
+          opponent: pickOpp(),
+          competition:
+            prev.stage === 'asian_cup' ? '亚洲杯' : '世界杯亚洲区预选赛',
+          venue: Math.random() < 0.5 ? '客场' : '中立场',
+          status: 'upcoming',
+        },
+      ]
+    : []
+
   return {
     ...prev,
     calledUp: called,
     campStatus: called ? 'provisional' : 'missed',
     provisionalSquad: squad,
-    finalSquad: null,
-    caps: called ? prev.caps : prev.caps,
+    finalSquad: called ? squad.slice(0, 23) : null,
     lastAnnouncement: called
       ? `【大名单】${stageWord}名单公布：你入选！`
       : `【大名单】${stageWord}名单公布：你落选`,
     stageLabel: called ? `${stageWord}·已入选` : `${stageWord}·未入选`,
+    campReportLabel: called
+      ? `${labelOf(report.year, report.month, report.week)} 赴国家队报到集训`
+      : null,
+    campReturnLabel: called
+      ? `${labelOf(ret.year, ret.month, ret.week)} 结束征召返回俱乐部`
+      : null,
+    fixtures,
     nextWindowLabel: called
-      ? '本周起进入国家队集训节奏，俱乐部比赛可能轮休'
+      ? `集训${fixtures[0] ? `，随后 ${fixtures[0].dateLabel} vs ${fixtures[0].opponent}` : ''}`
       : '下一期窗口请保持出场与评分',
   }
 }

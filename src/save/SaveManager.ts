@@ -101,6 +101,9 @@ function migrateState(state: GameState): GameState {
     finalSquad: intl.finalSquad ?? null,
     campStatus: intl.campStatus ?? 'none',
     lastAnnouncement: intl.lastAnnouncement ?? null,
+    campReportLabel: intl.campReportLabel ?? null,
+    campReturnLabel: intl.campReturnLabel ?? null,
+    fixtures: intl.fixtures ?? [],
   }
 
   // 榜单玩家行与 seasonStats 对齐

@@ -9,6 +9,7 @@ import type {
 import { poissonSample, uid, clamp } from '@/utils/random'
 import { generateSquad, pickTeammateName } from '@/core/SquadEngine'
 import { emptySeasonStats, syncSeasonStatsFromMatch } from '@/core/FinanceEngine'
+import { rollInjuryChance } from '@/core/InjuryEngine'
 
 interface Appearance {
   started: boolean
@@ -116,27 +117,6 @@ export function simulateLeagueMatch(
     if (teamGoalsAgainst === 0) cleanSheetBonus = 1.2
   }
 
-  let rating =
-    6.0 +
-    player.OVR / 50 +
-    form -
-    fatiguePen +
-    playerGoals * 0.9 +
-    playerAssists * 0.6 +
-    cleanSheetBonus +
-    (Math.random() * 0.8 - 0.4)
-
-  if (injured || app.minutes === 0) rating = 5.0
-  if (playerGoals >= 2) rating = Math.max(rating, 8.2)
-  if (myTeamGoals === 0 && playerGoals === 0 && !injured && app.minutes > 0) {
-    rating = Math.min(rating, 7.2)
-  }
-  if (!app.started && app.minutes > 0 && app.minutes < 25) {
-    rating = Math.min(rating, 7.4)
-  }
-
-  rating = Math.round(clamp(rating, 4.0, 10.0) * 10) / 10
-
   const playerDribbles =
     app.minutes <= 0
       ? 0
@@ -149,7 +129,7 @@ export function simulateLeagueMatch(
           ),
         )
 
-  const { events, goalMeta } = buildMatchTimeline({
+  const { events, goalMeta, effectivePlayerGoals, effectivePlayerAssists } = buildMatchTimeline({
     home,
     away,
     homeGoals,
@@ -161,6 +141,29 @@ export function simulateLeagueMatch(
     playerAssists,
     seasonYear,
   })
+  // 以时间轴为准，避免「统计进了球但事件不是你」
+  playerGoals = effectivePlayerGoals
+  playerAssists = effectivePlayerAssists
+
+  // 评分按时间轴确认后的进球/助攻计算
+  let rating =
+    6.0 +
+    player.OVR / 50 +
+    form -
+    fatiguePen +
+    playerGoals * 0.9 +
+    playerAssists * 0.6 +
+    cleanSheetBonus +
+    (Math.random() * 0.8 - 0.4)
+  if (injured || app.minutes === 0) rating = 5.0
+  if (playerGoals >= 2) rating = Math.max(rating, 8.2)
+  if (myTeamGoals === 0 && playerGoals === 0 && !injured && app.minutes > 0) {
+    rating = Math.min(rating, 7.2)
+  }
+  if (!app.started && app.minutes > 0 && app.minutes < 25) {
+    rating = Math.min(rating, 7.4)
+  }
+  rating = Math.round(clamp(rating, 4.0, 10.0) * 10) / 10
 
   const lineupRatings = buildLineupRatings({
     home,
@@ -173,6 +176,7 @@ export function simulateLeagueMatch(
     playerAssists,
     playerDribbles,
     seasonYear,
+    events,
   })
 
   const motm =
@@ -236,6 +240,13 @@ function playerImpact(player: Player): number {
   return (player.OVR - 65) * 0.15 + (player.morale - 50) * 0.03
 }
 
+function pitchWindow(app: Appearance): { lo: number; hi: number } | null {
+  if (app.minutes <= 0) return null
+  if (app.started) return { lo: 1, hi: app.subOff ?? 90 }
+  if (app.subOn != null) return { lo: app.subOn, hi: 90 }
+  return null
+}
+
 function buildMatchTimeline(args: {
   home: Team
   away: Team
@@ -247,7 +258,7 @@ function buildMatchTimeline(args: {
   playerGoals: number
   playerAssists: number
   seasonYear: number
-}): { events: MatchEvent[]; goalMeta: string[] } {
+}): { events: MatchEvent[]; goalMeta: string[]; effectivePlayerGoals: number; effectivePlayerAssists: number } {
   const {
     home,
     away,
@@ -261,19 +272,79 @@ function buildMatchTimeline(args: {
     seasonYear,
   } = args
   const myTeam = playerIsHome ? home : away
+  const oppTeam = playerIsHome ? away : home
+  const myGoalsTotal = playerIsHome ? homeGoals : awayGoals
+  const oppGoalsTotal = playerIsHome ? awayGoals : homeGoals
+  const window = pitchWindow(app)
+
   const events: MatchEvent[] = [{ minute: 0, type: 'kickoff', text: '比赛开始' }]
   const goalMeta: string[] = []
 
-  const goalSlots: { team: 'home' | 'away'; minute: number }[] = []
-  for (let i = 0; i < homeGoals; i++) {
-    goalSlots.push({ team: 'home', minute: randomMinute(6, 90) })
+  type Slot = {
+    team: 'home' | 'away'
+    minute: number
+    scorerIsPlayer: boolean
+    assistIsPlayer: boolean
   }
-  for (let i = 0; i < awayGoals; i++) {
-    goalSlots.push({ team: 'away', minute: randomMinute(6, 90) })
-  }
-  goalSlots.sort((a, b) => a.minute - b.minute)
+  const slots: Slot[] = []
 
-  // 出场/换人事件
+  // 1) 先把「你的进球」钉在你在场的时间段内
+  let placedPlayerGoals = 0
+  if (window && playerGoals > 0 && myGoalsTotal > 0) {
+    const maxG = Math.min(playerGoals, myGoalsTotal)
+    for (let i = 0; i < maxG; i++) {
+      const lo = Math.max(window.lo, 6)
+      const hi = Math.max(lo, window.hi)
+      slots.push({
+        team: playerIsHome ? 'home' : 'away',
+        minute: randomMinute(lo, hi),
+        scorerIsPlayer: true,
+        assistIsPlayer: false,
+      })
+      placedPlayerGoals++
+    }
+  }
+
+  // 2) 剩余本队进球：队友破门；尽量把助攻留给你（若你在场）
+  let placedAssists = 0
+  const teammateGoalsNeeded = myGoalsTotal - placedPlayerGoals
+  for (let i = 0; i < teammateGoalsNeeded; i++) {
+    let minute = randomMinute(6, 90)
+    let assistIsPlayer = false
+    if (
+      window &&
+      placedAssists < playerAssists &&
+      onPitch(minute, app)
+    ) {
+      assistIsPlayer = true
+      placedAssists++
+    } else if (window && placedAssists < playerAssists) {
+      // 强制助攻发生在你在场时
+      minute = randomMinute(Math.max(window.lo, 6), Math.max(window.lo, window.hi))
+      assistIsPlayer = true
+      placedAssists++
+    }
+    slots.push({
+      team: playerIsHome ? 'home' : 'away',
+      minute,
+      scorerIsPlayer: false,
+      assistIsPlayer,
+    })
+  }
+
+  // 3) 对手进球
+  for (let i = 0; i < oppGoalsTotal; i++) {
+    slots.push({
+      team: playerIsHome ? 'away' : 'home',
+      minute: randomMinute(6, 90),
+      scorerIsPlayer: false,
+      assistIsPlayer: false,
+    })
+  }
+
+  slots.sort((a, b) => a.minute - b.minute)
+
+  // 出场/换人
   if (app.minutes > 0) {
     if (!app.started && app.subOn != null) {
       events.push({
@@ -297,82 +368,41 @@ function buildMatchTimeline(args: {
 
   let scoreH = 0
   let scoreA = 0
-  let assignedPlayerGoals = 0
-  let assignedPlayerAssists = 0
-
-  for (const slot of goalSlots) {
+  for (const slot of slots) {
     const team = slot.team === 'home' ? home : away
-    const isMy = (slot.team === 'home') === playerIsHome
-    let scorer = pickTeammateName(team, seasonYear, [player.name])
+    let scorer: string
     let assist: string | undefined
     let isPlayerGoal = false
 
-    if (
-      isMy &&
-      assignedPlayerGoals < playerGoals &&
-      onPitch(slot.minute, app)
-    ) {
+    if (slot.scorerIsPlayer) {
       scorer = player.name
-      assignedPlayerGoals += 1
       isPlayerGoal = true
-    } else if (
-      isMy &&
-      assignedPlayerAssists < playerAssists &&
-      onPitch(slot.minute, app) &&
-      Math.random() < 0.75
-    ) {
-      assist = player.name
-      assignedPlayerAssists += 1
+      if (Math.random() < 0.45) {
+        assist = pickTeammateName(team, seasonYear, [player.name])
+      }
+    } else {
       scorer = pickTeammateName(team, seasonYear, [player.name])
-    } else if (Math.random() < 0.55) {
-      assist = pickTeammateName(team, seasonYear, [scorer, player.name])
+      if (slot.assistIsPlayer) {
+        assist = player.name
+      } else if (Math.random() < 0.5) {
+        assist = pickTeammateName(team, seasonYear, [scorer, player.name])
+      }
     }
 
     if (slot.team === 'home') scoreH += 1
     else scoreA += 1
 
     const assistBit = assist ? `（助攻 ${assist}）` : ''
-    const text = `${scorer} 破门${assistBit} · ${home.shortName} ${scoreH}-${scoreA} ${away.shortName}`
     events.push({
       minute: slot.minute,
       type: 'goal',
-      text,
+      text: `${scorer} 破门${assistBit} · ${home.shortName} ${scoreH}-${scoreA} ${away.shortName}`,
       teamId: team.id,
       scorerName: scorer,
       assistName: assist,
       isPlayer: isPlayerGoal || assist === player.name,
     })
     goalMeta.push(`${slot.minute}' ${scorer}${assist ? ` ← ${assist}` : ''}`)
-  }
-
-  // 未吃完的球员进球：改写同队已有进球事件（保持总比分不变）
-  if (assignedPlayerGoals < playerGoals) {
-    for (const ev of events) {
-      if (assignedPlayerGoals >= playerGoals) break
-      if (ev.type !== 'goal' || !ev.teamId || ev.teamId !== myTeam.id) continue
-      if (ev.scorerName === player.name) continue
-      if (!onPitch(ev.minute, app)) continue
-      ev.scorerName = player.name
-      ev.isPlayer = true
-      ev.text = `${player.name} 破门${ev.assistName ? `（助攻 ${ev.assistName}）` : ''} · ${home.shortName} …`
-      // 重写文案：从 goalMeta 里找同分钟
-      const idx = goalMeta.findIndex((g) => g.startsWith(`${ev.minute}'`))
-      if (idx >= 0) goalMeta[idx] = `${ev.minute}' ${player.name}${ev.assistName ? ` ← ${ev.assistName}` : ''}`
-      assignedPlayerGoals += 1
-    }
-  }
-
-  // 刷新进球文案比分缀（保持事件顺序上的滚动比分）
-  {
-    let h = 0
-    let a = 0
-    for (const ev of events) {
-      if (ev.type !== 'goal') continue
-      if (ev.teamId === home.id) h += 1
-      else a += 1
-      const assistBit = ev.assistName ? `（助攻 ${ev.assistName}）` : ''
-      ev.text = `${ev.scorerName} 破门${assistBit} · ${home.shortName} ${h}-${a} ${away.shortName}`
-    }
   }
 
   events.push({ minute: 45, type: 'ht', text: '半场结束' })
@@ -395,7 +425,13 @@ function buildMatchTimeline(args: {
     return (order[a.type] ?? 9) - (order[b.type] ?? 9)
   })
 
-  return { events, goalMeta }
+  void oppTeam
+  return {
+    events,
+    goalMeta,
+    effectivePlayerGoals: placedPlayerGoals,
+    effectivePlayerAssists: placedAssists,
+  }
 }
 
 function buildLineupRatings(args: {
@@ -409,36 +445,69 @@ function buildLineupRatings(args: {
   playerAssists: number
   playerDribbles: number
   seasonYear: number
+  events: MatchEvent[]
 }): MatchLineupRating[] {
-  const { home, away, player, playerIsHome, app, rating, playerGoals, playerAssists, playerDribbles, seasonYear } =
-    args
+  const {
+    home,
+    away,
+    player,
+    playerIsHome,
+    app,
+    rating,
+    playerGoals,
+    playerAssists,
+    playerDribbles,
+    seasonYear,
+    events,
+  } = args
   const rows: MatchLineupRating[] = []
+  const byName = new Map<string, MatchLineupRating>()
+
+  const ensure = (
+    name: string,
+    teamId: string,
+    position: string,
+    ovrHint: number,
+  ): MatchLineupRating => {
+    let row = byName.get(`${teamId}:${name}`)
+    if (!row) {
+      row = {
+        playerId: `npc_${teamId}_${name}`,
+        name,
+        teamId,
+        position,
+        rating: Math.round(clamp(5.8 + ovrHint / 45 + (Math.random() - 0.5) * 0.6, 5.0, 8.5) * 10) / 10,
+        goals: 0,
+        assists: 0,
+        minutes: 70 + Math.floor(Math.random() * 21),
+        dribbles: Math.floor(Math.random() * 3),
+      }
+      byName.set(`${teamId}:${name}`, row)
+      rows.push(row)
+    }
+    return row
+  }
 
   for (const team of [home, away]) {
     const isMy = team.id === (playerIsHome ? home.id : away.id)
     const squad = generateSquad(team, seasonYear, isMy ? player.name : undefined)
-    const starters = squad.slice(0, 11)
-    for (let i = 0; i < starters.length; i++) {
-      const s = starters[i]!
-      if (isMy && i === 0) continue // 位置留给玩家插入
-      const mins = 70 + Math.floor(Math.random() * 21)
-      const g = Math.random() < 0.12 ? 1 : 0
-      const a = Math.random() < 0.1 ? 1 : 0
-      const r =
-        Math.round(
-          clamp(5.5 + s.ovr / 40 + g * 0.8 + a * 0.5 + (Math.random() - 0.5), 4.5, 9.2) * 10,
-        ) / 10
-      rows.push({
-        playerId: s.id,
-        name: s.name,
-        teamId: team.id,
-        position: s.position,
-        rating: r,
-        goals: g,
-        assists: a,
-        minutes: mins,
-        dribbles: Math.floor(Math.random() * 4),
-      })
+    for (const s of squad.slice(0, 11)) {
+      if (isMy && s.name === player.name) continue
+      ensure(s.name, team.id, s.position, s.ovr)
+    }
+  }
+
+  // 时间轴进球/助攻写回评分板（禁止随机另造进球）
+  for (const ev of events) {
+    if (ev.type !== 'goal' || !ev.scorerName || !ev.teamId) continue
+    if (ev.scorerName === player.name) continue
+    const row = ensure(ev.scorerName, ev.teamId, 'ST', 72)
+    row.goals += 1
+    row.rating = Math.min(9.5, Math.round((row.rating + 0.7) * 10) / 10)
+    if (ev.assistName && ev.assistName !== player.name) {
+      const a = ensure(ev.assistName, ev.teamId, 'CAM', 70)
+      a.assists += 1
+      a.rating = Math.min(9.2, Math.round((a.rating + 0.4) * 10) / 10)
     }
   }
 
@@ -602,7 +671,7 @@ export function applyMatchToPlayer(player: Player, match: MatchResult): Player {
   if (match.playerRating >= 7.5) morale += 5
   if (match.playerRating < 5.5) morale -= 6
 
-  return {
+  let next: Player = {
     ...player,
     careerStats: stats,
     seasonStats,
@@ -610,6 +679,15 @@ export function applyMatchToPlayer(player: Player, match: MatchResult): Player {
     morale: clamp(morale, 0, 100),
     fatigue: clamp(player.fatigue + (match.playerMinutes > 60 ? 12 : 5), 0, 100),
   }
+
+  // 高强度比赛后疲劳过高可能受伤
+  if (played && !player.injury) {
+    const extra = match.playerMinutes >= 80 ? 0.06 : match.playerMinutes >= 60 ? 0.03 : 0.01
+    const rolled = rollInjuryChance(next, extra)
+    next = rolled.player
+  }
+
+  return next
 }
 
 /** 玩家行与 seasonStats 严格对齐；NPC 进球累加 */
@@ -720,5 +798,8 @@ export function emptyInternational(): import('@/models/types').InternationalStat
     provisionalSquad: [],
     finalSquad: null,
     lastAnnouncement: null,
+    campReportLabel: null,
+    campReturnLabel: null,
+    fixtures: [],
   }
 }

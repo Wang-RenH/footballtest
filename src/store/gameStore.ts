@@ -38,6 +38,7 @@ import {
   getTransferWindow,
 } from '@/core/FinanceEngine'
 import { buildWeeklyBulletins, pushBulletin, rollNationalCamp } from '@/core/BulletinEngine'
+import { rollInjuryChance } from '@/core/InjuryEngine'
 import {
   getPlayerFixture,
   playPlayerMatchWeek,
@@ -644,7 +645,14 @@ function advanceTimeOnly(state: GameState): GameState {
   // 周薪 / 生活费（替代旧的固定补贴）
   const finance = applyWeeklyFinance(player, time)
   player = finance.player
-  history.push(...finance.lines.slice(0, 2))
+  history.push(...finance.lines.slice(0, 4))
+
+  // 高疲劳周也可能突发伤病
+  if (!player.injury && player.fatigue >= 75) {
+    const rolled = rollInjuryChance(player, 0.05)
+    player = rolled.player
+    if (rolled.note) history.push(rolled.note)
+  }
 
   player = refreshPlayerOVR(player)
 
@@ -1208,6 +1216,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const weeksLeft = player.injury.weeksLeft - 1
       player.injury = weeksLeft <= 0 ? null : { ...player.injury, weeksLeft }
       if (!player.injury) player.morale = clamp(player.morale + 5, 0, 100)
+    } else if (focus !== 'REST' && player.fatigue >= 65) {
+      const rolled = rollInjuryChance(player, focus === 'PHY' ? 0.08 : 0.04)
+      player = rolled.player
+      if (rolled.note) {
+        result = { ...result, note: `${result.note}；${rolled.note}` }
+      }
     }
 
     const next: GameState = {
