@@ -3,8 +3,11 @@ import { useGameStore } from '@/store/gameStore'
 import { useSettingsStore } from '@/store/settingsStore'
 import {
   createAIProvider,
+  formatFetchError,
   getDefaultModel,
   getProviderDefaults,
+  isDevAiProxyAvailable,
+  isStaticWebHost,
   MODEL_PRESETS,
 } from '@/ai/AIProvider'
 import type { ApiProviderId } from '@/models/types'
@@ -18,6 +21,12 @@ export function SettingsScreen() {
   const setProvider = useSettingsStore((s) => s.setProvider)
   const [testMsg, setTestMsg] = useState('')
   const [customModel, setCustomModel] = useState(false)
+
+  const onStaticHost = typeof window !== 'undefined' && isStaticWebHost()
+  const needsProxy =
+    settings.apiProvider !== 'none' &&
+    !isDevAiProxyAvailable() &&
+    !(settings.aiProxyBase || '').trim()
 
   const providers: { id: ApiProviderId; label: string }[] = [
     { id: 'none', label: '本地事件库' },
@@ -43,6 +52,7 @@ export function SettingsScreen() {
       settings.apiKey,
       settings.apiEndpoint,
       settings.apiModel || getDefaultModel(settings.apiProvider),
+      settings.aiProxyBase,
     )
     if (!p) {
       setTestMsg('请选择服务商并填写 API Key')
@@ -52,7 +62,7 @@ export function SettingsScreen() {
       const result = await p.testConnection()
       setTestMsg(result.detail)
     } catch (e) {
-      setTestMsg(e instanceof Error ? e.message : '连接失败')
+      setTestMsg(formatFetchError(e))
     }
   }
 
@@ -70,18 +80,14 @@ export function SettingsScreen() {
       <div className="panel mt-5 space-y-4 p-4">
         <h3 className="text-sm tracking-widest text-white/40">AI 叙事引擎</h3>
         <p className="text-xs text-white/45">
-          Key 仅存本机。浏览器需通过{' '}
-          <code className="text-[#f0d78c]">npm run dev</code> 的本地代理访问。智谱对接见{' '}
-          <a
-            className="text-[#f0d78c] underline"
-            href="https://docs.bigmodel.cn/cn/guide/start/quick-start"
-            target="_blank"
-            rel="noreferrer"
-          >
-            官方快速开始
-          </a>
-          。
+          Key 仅存本机。手机/GitHub Pages 已默认走跨域代理；电脑本地用{' '}
+          <code className="text-[#f0d78c]">npm run dev</code> 即可。
         </p>
+        {onStaticHost && needsProxy ? (
+          <p className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100/90">
+            代理未生效时，可在下方填写 Cloudflare Worker 地址。
+          </p>
+        ) : null}
         <label className="flex items-center gap-2 text-sm text-white/70">
           <input
             type="checkbox"
@@ -156,15 +162,13 @@ export function SettingsScreen() {
             ) : null}
             {settings.apiProvider === 'glm' ? (
               <p className="text-xs text-white/35">
-                速度建议选 glm-4-flash（默认）。质量优先可换 glm-4.5-air。端点走 /ai-proxy。
+                速度建议选 glm-4-flash（默认）。质量优先可换 glm-4.5-air。
               </p>
             ) : settings.apiProvider === 'minimax' ? (
-              <p className="text-xs text-white/35">
-                端点 api.minimaxi.com/v1 · 默认 MiniMax-M3 · 开发模式走 /ai-proxy/minimax
-              </p>
+              <p className="text-xs text-white/35">端点 api.minimaxi.com/v1 · 默认 MiniMax-M3</p>
             ) : (
               <p className="text-xs text-white/35">
-                默认：{getProviderDefaults(settings.apiProvider)?.model} · 开发模式走 /ai-proxy
+                默认：{getProviderDefaults(settings.apiProvider)?.model}
               </p>
             )}
           </div>
@@ -182,6 +186,15 @@ export function SettingsScreen() {
                 : '仅本地保存'
             }
             onChange={(e) => setSettings({ apiKey: e.target.value })}
+          />
+        </label>
+        <label className="block text-sm text-white/60">
+          跨域代理（一般不用改，已默认填好）
+          <input
+            className="mt-1 w-full rounded-md border border-white/10 bg-black/30 px-3 py-2 text-white"
+            value={settings.aiProxyBase}
+            placeholder="https://footballtest.2829546880.workers.dev"
+            onChange={(e) => setSettings({ aiProxyBase: e.target.value.trim() })}
           />
         </label>
         <label className="block text-sm text-white/60">

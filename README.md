@@ -52,6 +52,18 @@ npm run build
 
 **现在阶段不建议先买服务器**；先用 Vercel/Cloudflare 上线试玩即可。
 
+## 手机 / GitHub Pages 用 AI（HTTP 405 说明）
+
+Pages 是纯静态站，**没有**本地开发时的 `/ai-proxy`，浏览器 POST 会得到 **405 Not Allowed**。
+
+1. 按 [`workers/ai-cors-proxy/README.md`](./workers/ai-cors-proxy/README.md) 部署免费 Cloudflare Worker  
+2. 游戏 **设置 → 跨域代理根地址** 填入 `https://你的名字.workers.dev`  
+3. 再点「测试连接」
+
+电脑本地仍用 `npm run dev`，不必填代理。
+
+也可在构建时注入：`VITE_AI_PROXY_BASE=https://xxx.workers.dev`（免去每人手填）。
+
 ## 试玩内容
 
 - 快速模式 / 完整生涯

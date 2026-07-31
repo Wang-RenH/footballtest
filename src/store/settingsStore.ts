@@ -1,13 +1,14 @@
 import { create } from 'zustand'
 import type { ApiProviderId, AppSettings } from '@/models/types'
 import { loadSettingsJson, saveSettingsJson } from '@/save/SaveManager'
-import { getDefaultModel, getProviderDefaults } from '@/ai/AIProvider'
+import { getDefaultModel, getProviderDefaults, DEFAULT_AI_PROXY_BASE } from '@/ai/AIProvider'
 
 const DEFAULTS: AppSettings = {
   apiKey: '',
   apiProvider: 'none',
   apiEndpoint: 'https://api.deepseek.com/v1/chat/completions',
   apiModel: '',
+  aiProxyBase: DEFAULT_AI_PROXY_BASE,
   difficulty: 'normal',
   useAiEvents: false,
 }
@@ -19,6 +20,9 @@ function load(): AppSettings {
     const parsed = { ...DEFAULTS, ...(JSON.parse(raw) as Partial<AppSettings>) }
     if (!parsed.apiModel && parsed.apiProvider !== 'none') {
       parsed.apiModel = getDefaultModel(parsed.apiProvider)
+    }
+    if (!parsed.aiProxyBase?.trim()) {
+      parsed.aiProxyBase = DEFAULT_AI_PROXY_BASE
     }
     return parsed
   } catch {
@@ -38,6 +42,7 @@ function persist(data: AppSettings) {
       apiProvider: data.apiProvider,
       apiEndpoint: data.apiEndpoint,
       apiModel: data.apiModel,
+      aiProxyBase: data.aiProxyBase,
       difficulty: data.difficulty,
       useAiEvents: data.useAiEvents,
     }),

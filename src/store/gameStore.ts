@@ -356,6 +356,7 @@ async function fetchMonthQueue(
       settings.apiKey,
       settings.apiEndpoint,
       settings.apiModel,
+      settings.aiProxyBase,
     )
     if (provider) {
       try {
@@ -395,6 +396,7 @@ function startMonthEventPrefetch(timed: GameState) {
     settings.apiKey,
     settings.apiEndpoint,
     settings.apiModel,
+    settings.aiProxyBase,
   )
   if (!provider) return
 
@@ -1120,6 +1122,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           settings.apiKey,
           settings.apiEndpoint,
           settings.apiModel,
+          settings.aiProxyBase,
         )
       : null
 
@@ -1371,6 +1374,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       settings.apiKey,
       settings.apiEndpoint,
       settings.apiModel,
+      settings.aiProxyBase,
     )
     if (!provider) {
       set({ flash: '无法创建 AI 服务，请检查设置' })

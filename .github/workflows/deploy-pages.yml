@@ -21,6 +21,7 @@ jobs:
       - run: npm run build
         env:
           GITHUB_PAGES: 'true'
+          VITE_AI_PROXY_BASE: 'https://footballtest.2829546880.workers.dev'
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:

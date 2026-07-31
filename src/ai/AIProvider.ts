@@ -153,9 +153,37 @@ export function getDefaultModel(provider: ApiProviderId): string {
   return PROVIDER_DEFAULTS[provider].model
 }
 
+/** 线上默认跨域代理（Cloudflare Worker），手机/GitHub Pages 开箱即用 */
+export const DEFAULT_AI_PROXY_BASE = 'https://footballtest.2829546880.workers.dev'
+
+export function isDevAiProxyAvailable(): boolean {
+  return Boolean(import.meta.env.DEV)
+}
+
+/** 线上静态站（GitHub Pages）用的跨域代理根 */
+export function getHostedProxyBase(overrideFromSettings?: string): string {
+  const fromSettings = overrideFromSettings?.trim() || ''
+  if (fromSettings) return fromSettings.replace(/\/$/, '')
+  const baked = String(import.meta.env.VITE_AI_PROXY_BASE || '').trim()
+  if (baked) return baked.replace(/\/$/, '')
+  return DEFAULT_AI_PROXY_BASE
+}
+
+export function isStaticWebHost(): boolean {
+  if (typeof window === 'undefined') return false
+  const h = window.location.hostname
+  return (
+    h.endsWith('github.io') ||
+    h.endsWith('pages.dev') ||
+    h.endsWith('netlify.app') ||
+    h.endsWith('vercel.app')
+  )
+}
+
 export function resolveChatEndpoint(
   provider: ApiProviderId,
   endpointOverride?: string,
+  proxyBaseOverride?: string,
 ): string {
   if (provider === 'none') return ''
   const def = PROVIDER_DEFAULTS[provider]
@@ -174,15 +202,27 @@ export function resolveChatEndpoint(
     (provider === 'glm' && /bigmodel\.cn/i.test(override)) ||
     (provider === 'minimax' && /minimaxi?\.com/i.test(override))
 
+  // 用户填了自定义完整代理 URL（非官方、非内置 /ai-proxy）→ 原样使用
   if (override && !isOfficialOrProxy) {
     return override
   }
 
-  if (typeof window !== 'undefined' && def.proxyPath) {
+  // 仅本地 Vite 开发服优先走 /ai-proxy
+  if (isDevAiProxyAvailable() && def.proxyPath) {
     return def.proxyPath
   }
 
-  return def.endpoint
+  // 线上静态站：用默认/配置的 Cloudflare Worker
+  const hosted = getHostedProxyBase(proxyBaseOverride)
+  if (hosted && def.proxyPath) {
+    const path = def.proxyPath.replace(/^\/ai-proxy/, '')
+    return `${hosted}${path}`
+  }
+
+  // 生产直连官方（多数会因 CORS 失败）
+  return override && isOfficialOrProxy && !override.startsWith('/ai-proxy/')
+    ? override
+    : def.endpoint
 }
 
 async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
@@ -277,18 +317,7 @@ export class OpenAICompatibleProvider implements AIProvider {
         'AI 请求',
       )
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      if (/Failed to fetch|NetworkError|Load failed/i.test(msg)) {
-        throw new Error(
-          '网络被拦截（常见于 CORS）。请用 npm run dev 启动（已内置 /ai-proxy）。',
-        )
-      }
-      if (/超时/.test(msg)) {
-        throw new Error(
-          `${msg}。连通测试只测短回复；生成事件更慢。请点「刷新重试」，或换 glm-4-flash。`,
-        )
-      }
-      throw err
+      throw new Error(formatFetchError(err, this.endpoint))
     }
   }
 
@@ -421,10 +450,11 @@ export function createAIProvider(
   apiKey: string,
   endpointOverride?: string,
   modelOverride?: string,
+  proxyBaseOverride?: string,
 ): AIProvider | null {
   if (provider === 'none' || !apiKey.trim()) return null
   const def = PROVIDER_DEFAULTS[provider]
-  const endpoint = resolveChatEndpoint(provider, endpointOverride)
+  const endpoint = resolveChatEndpoint(provider, endpointOverride, proxyBaseOverride)
   const model = (modelOverride?.trim() || def.model).trim()
   return new OpenAICompatibleProvider(
     endpoint,
@@ -445,7 +475,29 @@ function formatHttpError(status: number, body: string): string {
   }
   if (status === 429) return '请求过于频繁（HTTP 429）。'
   if (status === 404) return '接口或模型不存在（HTTP 404）。'
+  if (status === 405) {
+    return 'HTTP 405：当前站点没有 AI 代理（GitHub Pages 不能 POST /ai-proxy）。请在设置填写「跨域代理根地址」，或用电脑 npm run dev 本地玩。'
+  }
   return `HTTP ${status}: ${snippet || '请求失败'}`
+}
+
+/** 把网络/CORS 失败转成可读中文 */
+export function formatFetchError(err: unknown, endpointHint?: string): string {
+  const msg = err instanceof Error ? err.message : String(err)
+  if (/超时/.test(msg)) {
+    return `${msg}。连通测试只测短回复；生成事件更慢。请点「刷新重试」，或换更快模型（如 glm-4-flash）。`
+  }
+  if (/failed to fetch|networkerror|load failed|cors/i.test(msg)) {
+    const ep = endpointHint || ''
+    if (ep.startsWith('/ai-proxy/')) {
+      return 'HTTP 代理路径无效：线上站没有 /ai-proxy。请在设置填写「跨域代理根地址」。'
+    }
+    if (isStaticWebHost() && !/workers\.dev|ai-proxy|localhost/i.test(ep)) {
+      return '无法连接 AI（跨域）。手机/GitHub Pages 请在设置填写 Cloudflare Worker「跨域代理根地址」。'
+    }
+    return `无法连接 AI：${msg}。若在线上站，请检查跨域代理；本地请用 npm run dev。`
+  }
+  return msg
 }
 
 /** 兼容 content / reasoning_content / 多段 content 数组 */
