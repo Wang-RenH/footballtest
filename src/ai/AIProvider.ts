@@ -156,17 +156,27 @@ export function getDefaultModel(provider: ApiProviderId): string {
 export function isDevAiProxyAvailable(): boolean {
   if (import.meta.env.DEV) return true
   if (typeof window === 'undefined') return false
-  // vite preview / 局域网 IP 访问开发机时也走本地代理
   const h = window.location.hostname
   return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.local')
 }
 
-/** 线上默认跨域代理（Cloudflare Worker），手机/GitHub Pages 开箱即用 */
-export const DEFAULT_AI_PROXY_BASE = 'https://footballtest.2829546880.workers.dev'
+/** Cloudflare Pages 同源 /ai-proxy（不依赖 workers.dev） */
+export function usesSameOriginAiProxy(): boolean {
+  if (isDevAiProxyAvailable()) return true
+  if (typeof window === 'undefined') return false
+  const h = window.location.hostname
+  return h.endsWith('pages.dev') || h.endsWith('pages.cloudflare.com')
+}
 
-/** 线上静态站（GitHub Pages）用的跨域代理根；本地开发忽略 */
+/**
+ * 可选的外置代理根。国内常访问不了 workers.dev，故默认不再填。
+ * 仅当你有可访问的自建代理时再在设置里填写。
+ */
+export const DEFAULT_AI_PROXY_BASE = ''
+
+/** 外置跨域代理根；本地 / CF Pages 同源代理时不用 */
 export function getHostedProxyBase(overrideFromSettings?: string): string {
-  if (isDevAiProxyAvailable()) return ''
+  if (usesSameOriginAiProxy()) return ''
   const fromSettings = overrideFromSettings?.trim() || ''
   if (fromSettings) return fromSettings.replace(/\/$/, '')
   const baked = String(import.meta.env.VITE_AI_PROXY_BASE || '').trim()
@@ -183,6 +193,10 @@ export function isStaticWebHost(): boolean {
     h.endsWith('netlify.app') ||
     h.endsWith('vercel.app')
   )
+}
+
+export function isGitHubPagesHost(): boolean {
+  return typeof window !== 'undefined' && window.location.hostname.endsWith('github.io')
 }
 
 export function resolveChatEndpoint(
@@ -212,19 +226,19 @@ export function resolveChatEndpoint(
     return override
   }
 
-  // 仅本地 Vite 开发服优先走 /ai-proxy
-  if (isDevAiProxyAvailable() && def.proxyPath) {
+  // 本地 Vite 或 Cloudflare Pages：同源 /ai-proxy
+  if (usesSameOriginAiProxy() && def.proxyPath) {
     return def.proxyPath
   }
 
-  // 线上静态站：用默认/配置的 Cloudflare Worker
+  // 可选外置 Worker / 自建代理
   const hosted = getHostedProxyBase(proxyBaseOverride)
   if (hosted && def.proxyPath) {
     const path = def.proxyPath.replace(/^\/ai-proxy/, '')
     return `${hosted}${path}`
   }
 
-  // 生产直连官方（多数会因 CORS 失败）
+  // GitHub Pages 无可用同源代理时走官方（浏览器会因 CORS 失败，错误文案会引导换 CF Pages）
   return override && isOfficialOrProxy && !override.startsWith('/ai-proxy/')
     ? override
     : def.endpoint
@@ -503,22 +517,29 @@ function formatHttpError(status: number, body: string): string {
 /** 把网络/CORS 失败转成可读中文 */
 export function formatFetchError(err: unknown, endpointHint?: string): string {
   const msg = err instanceof Error ? err.message : String(err)
-  // 已包装过则不再追加，避免文案重复两遍
-  if (/本地事件库|连通测试只测|跨域代理/.test(msg) && /超时|不可达|连不上/.test(msg)) {
+  if (
+    msg.startsWith('无法连接') ||
+    msg.includes('GitHub Pages') ||
+    msg.includes('本地事件库') ||
+    msg.includes('Cloudflare Pages')
+  ) {
     return msg
   }
   if (/超时/.test(msg)) {
-    return `${msg}。手机经代理较慢，已加长等待；仍失败请换 glm-4-flash，或改用「本地事件库」。`
+    return `${msg}。可换更快模型（如 glm-4-flash），或改用「本地事件库」。`
   }
   if (/failed to fetch|networkerror|load failed|cors/i.test(msg)) {
     const ep = endpointHint || ''
+    if (isGitHubPagesHost()) {
+      return 'GitHub Pages 在国内很难连在线 AI（*.workers.dev 常打不开）。请改用 Cloudflare Pages 地址打开本游戏，或电脑执行 npm run dev；说明见仓库 docs/CLOUDFLARE_PAGES.md。'
+    }
+    if (ep.includes('workers.dev')) {
+      return '跨域代理 workers.dev 连不上（国内常见）。请改用 Cloudflare Pages 部署（同源 /ai-proxy），或本地 npm run dev。'
+    }
     if (ep.startsWith('/ai-proxy/')) {
-      return 'HTTP 代理路径无效：线上站没有 /ai-proxy。请在设置填写「跨域代理根地址」。'
+      return '当前站点没有可用的 /ai-proxy。请用 npm run dev，或部署到 Cloudflare Pages。'
     }
-    if (isStaticWebHost() && !/workers\.dev|ai-proxy|localhost/i.test(ep)) {
-      return '无法连接 AI（跨域）。手机/GitHub Pages 请确认跨域代理可用。'
-    }
-    return `无法连接 AI：${msg}。若在线上站，请检查跨域代理；本地请用 npm run dev。`
+    return `无法连接 AI（${msg}）。本地请用 npm run dev；线上请用 Cloudflare Pages。`
   }
   return msg
 }

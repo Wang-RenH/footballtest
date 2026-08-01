@@ -17,52 +17,29 @@ npm run build    # 产出 dist/
 npm run preview  # 预览生产包
 ```
 
-## 给别人在线玩（推荐，不必先买服务器）
+## 给别人在线玩（推荐 Cloudflare Pages）
 
-这是 **Vite 静态前端**，最省事的方式是丢到免费静态托管：
+**手机要用 AI：不要用 github.io**（国内常打不开 `workers.dev` 代理）。
 
-### 方案 A：GitHub + Vercel / Cloudflare Pages（推荐）
+按 [`docs/CLOUDFLARE_PAGES.md`](./docs/CLOUDFLARE_PAGES.md) 把仓库接到 Cloudflare Pages，用 `*.pages.dev` 链接分享。
 
-1. 把仓库推到 GitHub
-2. 用 [Vercel](https://vercel.com) 或 [Cloudflare Pages](https://pages.cloudflare.com) 导入该仓库
-3. 构建设置：
-   - Root：`foootball`（若仓库根目录就是本项目则留空）
-   - Build：`npm run build`
-   - Output：`dist`
-4. 绑定免费域名后，把链接发给朋友即可打开游玩
+简要步骤：Cloudflare → Workers & Pages → Create → Pages → Connect to Git → 选本仓库 → Build `npm run build` → Output `dist` → 部署。
 
-> 存档在每人浏览器的 localStorage，互不影响。AI Key 各自在「设置」里填。
+| 地址 | 游戏 | 手机 AI |
+|------|------|---------|
+| `*.pages.dev` | 可以 | 可以（同源 `/ai-proxy`） |
+| `github.io` | 可以 | 国内常不行 |
+| 电脑 `npm run dev` | 可以 | 本机最稳；手机可连电脑局域网 IP |
 
-### 方案 B：GitHub Pages
+> 存档在每人浏览器的 localStorage。AI Key 各自在「设置」里填。
 
-```bash
-cd foootball
-npm run build
-```
+### 方案 B：GitHub Pages（仅试玩流程，AI 受限）
 
-把 `dist/` 发到 `gh-pages` 分支。若站点不在域名根路径，需在 `vite.config.ts` 设 `base: '/repo/'`。
+仓库已配置 Actions 发布到 `gh-pages`。适合不依赖 AI 的试玩；要 AI 请用上面的 Cloudflare Pages。
 
 ### 方案 C：自己买服务器
 
-仅当你要做 **账号登录 / 云存档 / 自建 AI 代理** 时才需要：
-
-- 轻量：一台 1核2G + Nginx 托管 `dist/`
-- AI 代理：服务器反代 API，避免 CORS 并保管 Key
-- 云存档：再加后端或微信云开发接 `StorageAdapter`
-
-**现在阶段不建议先买服务器**；先用 Vercel/Cloudflare 上线试玩即可。
-
-## 手机 / GitHub Pages 用 AI（HTTP 405 说明）
-
-Pages 是纯静态站，**没有**本地开发时的 `/ai-proxy`，浏览器 POST 会得到 **405 Not Allowed**。
-
-1. 按 [`workers/ai-cors-proxy/README.md`](./workers/ai-cors-proxy/README.md) 部署免费 Cloudflare Worker  
-2. 游戏 **设置 → 跨域代理根地址** 填入 `https://你的名字.workers.dev`  
-3. 再点「测试连接」
-
-电脑本地仍用 `npm run dev`，不必填代理。
-
-也可在构建时注入：`VITE_AI_PROXY_BASE=https://xxx.workers.dev`（免去每人手填）。
+仅当你要做 **账号登录 / 云存档 / 自建 AI 代理** 时才需要。现阶段不必买服务器。
 
 ## 试玩内容
 

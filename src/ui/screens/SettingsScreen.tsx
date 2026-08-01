@@ -7,7 +7,8 @@ import {
   getDefaultModel,
   getProviderDefaults,
   isDevAiProxyAvailable,
-  isStaticWebHost,
+  isGitHubPagesHost,
+  usesSameOriginAiProxy,
   MODEL_PRESETS,
 } from '@/ai/AIProvider'
 import type { ApiProviderId } from '@/models/types'
@@ -22,11 +23,13 @@ export function SettingsScreen() {
   const [testMsg, setTestMsg] = useState('')
   const [customModel, setCustomModel] = useState(false)
 
-  const onStaticHost = typeof window !== 'undefined' && isStaticWebHost()
-  const needsProxy =
+  const onGitHubPages = typeof window !== 'undefined' && isGitHubPagesHost()
+  const onSameOriginProxy = typeof window !== 'undefined' && usesSameOriginAiProxy()
+  const needsExternalProxy =
     settings.apiProvider !== 'none' &&
-    !isDevAiProxyAvailable() &&
-    !(settings.aiProxyBase || '').trim()
+    !onSameOriginProxy &&
+    !(settings.aiProxyBase || '').trim() &&
+    !isDevAiProxyAvailable()
 
   const providers: { id: ApiProviderId; label: string }[] = [
     { id: 'none', label: '本地事件库' },
@@ -79,25 +82,34 @@ export function SettingsScreen() {
 
       <div className="panel mt-5 space-y-4 p-4">
         <h3 className="text-sm tracking-widest text-white/40">AI 叙事引擎</h3>
-        <p className="text-xs" style={{ color: '#f0d78c' }}>网页版 731-proxy · 跨域代理已内置</p>
-        <p className="text-xs text-white/45">
-          Key 仅存本机。手机一般不用改代理；电脑本地用{' '}
-          <code className="text-[#f0d78c]">npm run dev</code> 即可。
+        <p className="text-xs" style={{ color: '#f0d78c' }}>
+          网页版 801-cf · {onSameOriginProxy ? '同源代理' : onGitHubPages ? 'GitHub Pages' : '检查代理'}
         </p>
+        <p className="text-xs text-white/45">
+          Key 仅存本机。手机要用 AI：请打开 Cloudflare Pages 地址（不要用 github.io）。电脑本地用{' '}
+          <code className="text-[#f0d78c]">npm run dev</code>。
+        </p>
+        {onGitHubPages ? (
+          <p className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100/90">
+            当前是 GitHub Pages：国内打不开 workers.dev，在线 AI 基本不可用。请按仓库{' '}
+            <code className="text-[#f0d78c]">docs/CLOUDFLARE_PAGES.md</code> 部署到 Cloudflare Pages，用
+            pages.dev 链接玩。
+          </p>
+        ) : null}
+        {needsExternalProxy && !onGitHubPages ? (
+          <p className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100/90">
+            当前站点没有同源 AI 代理。请部署到 Cloudflare Pages，或填写下方可访问的代理地址。
+          </p>
+        ) : null}
         <label className="block text-sm text-white/60">
-          跨域代理（已默认填好，一般不用改）
+          外置跨域代理（一般留空；仅自建代理时填写）
           <input
             className="mt-1 w-full rounded-md border border-white/10 bg-black/30 px-3 py-2 text-white"
             value={settings.aiProxyBase}
-            placeholder="https://footballtest.2829546880.workers.dev"
+            placeholder="通常留空"
             onChange={(e) => setSettings({ aiProxyBase: e.target.value.trim() })}
           />
         </label>
-        {onStaticHost && needsProxy ? (
-          <p className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100/90">
-            代理为空时请填写 Cloudflare Worker 地址。
-          </p>
-        ) : null}
         <label className="flex items-center gap-2 text-sm text-white/70">
           <input
             type="checkbox"

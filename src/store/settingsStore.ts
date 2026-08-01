@@ -21,7 +21,8 @@ function load(): AppSettings {
     if (!parsed.apiModel && parsed.apiProvider !== 'none') {
       parsed.apiModel = getDefaultModel(parsed.apiProvider)
     }
-    if (!parsed.aiProxyBase?.trim()) {
+    // 旧默认 workers.dev 在国内不可达，自动清空改走新策略
+    if (/workers\.dev/i.test(parsed.aiProxyBase || '')) {
       parsed.aiProxyBase = DEFAULT_AI_PROXY_BASE
     }
     return parsed
