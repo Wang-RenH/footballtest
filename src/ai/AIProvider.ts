@@ -153,15 +153,20 @@ export function getDefaultModel(provider: ApiProviderId): string {
   return PROVIDER_DEFAULTS[provider].model
 }
 
+export function isDevAiProxyAvailable(): boolean {
+  if (import.meta.env.DEV) return true
+  if (typeof window === 'undefined') return false
+  // vite preview / 局域网 IP 访问开发机时也走本地代理
+  const h = window.location.hostname
+  return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.local')
+}
+
 /** 线上默认跨域代理（Cloudflare Worker），手机/GitHub Pages 开箱即用 */
 export const DEFAULT_AI_PROXY_BASE = 'https://footballtest.2829546880.workers.dev'
 
-export function isDevAiProxyAvailable(): boolean {
-  return Boolean(import.meta.env.DEV)
-}
-
-/** 线上静态站（GitHub Pages）用的跨域代理根 */
+/** 线上静态站（GitHub Pages）用的跨域代理根；本地开发忽略 */
 export function getHostedProxyBase(overrideFromSettings?: string): string {
+  if (isDevAiProxyAvailable()) return ''
   const fromSettings = overrideFromSettings?.trim() || ''
   if (fromSettings) return fromSettings.replace(/\/$/, '')
   const baked = String(import.meta.env.VITE_AI_PROXY_BASE || '').trim()
@@ -239,31 +244,13 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): P
   }
 }
 
-/** 从 chat 完整 URL 推出代理根，探测 /health */
-async function pingProxyHealth(chatEndpoint: string): Promise<string | null> {
+function shortEndpoint(endpoint: string): string {
   try {
-    const u = new URL(chatEndpoint, typeof location !== 'undefined' ? location.href : undefined)
-    if (!/workers\.dev$/i.test(u.hostname) && !u.hostname.includes('workers.dev')) {
-      // 相对路径 /ai-proxy 或官方直连：跳过
-      if (u.pathname.startsWith('/ai-proxy') || !u.hostname.includes('workers')) return null
-    }
-    const healthUrl = `${u.origin}/health`
-    const res = await withTimeout(
-      fetch(healthUrl, { method: 'GET' }),
-      12000,
-      '代理探测',
-    )
-    if (!res.ok) return `跨域代理异常（HTTP ${res.status}）。请重新部署 workers/ai-cors-proxy。`
-    return null
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    if (/超时/.test(msg)) {
-      return '跨域代理连不上（超时）。国内网络常访问不了 *.workers.dev，可换 WiFi/流量、开加速，或设置里改用「本地事件库」。'
-    }
-    if (/failed to fetch|networkerror|load failed/i.test(msg)) {
-      return '跨域代理不可达。国内可能屏蔽 workers.dev：换网络/加速，或用「本地事件库」。'
-    }
-    return null
+    if (endpoint.startsWith('/')) return endpoint
+    const u = new URL(endpoint)
+    return u.host
+  } catch {
+    return endpoint.slice(0, 48)
   }
 }
 
@@ -350,19 +337,18 @@ export class OpenAICompatibleProvider implements AIProvider {
   }
 
   async testConnection(): Promise<{ ok: boolean; detail: string }> {
-    // 先测代理是否可达（国内部分网络访问 workers.dev 很慢/不通）
-    const proxyPing = await pingProxyHealth(this.endpoint)
-    if (proxyPing) {
-      return { ok: false, detail: proxyPing }
-    }
-    const res = await this.postChat([{ role: 'user', content: '只回复ok' }], 8, 60000)
-    const text = await res.text()
-    if (!res.ok) {
-      return { ok: false, detail: formatHttpError(res.status, text) }
-    }
-    return {
-      ok: true,
-      detail: `连接成功 · 模型 ${this.model}`,
+    try {
+      const res = await this.postChat([{ role: 'user', content: '只回复ok' }], 8, 60000)
+      const text = await res.text()
+      if (!res.ok) {
+        return { ok: false, detail: formatHttpError(res.status, text) }
+      }
+      return {
+        ok: true,
+        detail: `连接成功 · 模型 ${this.model} · ${shortEndpoint(this.endpoint)}`,
+      }
+    } catch (err) {
+      return { ok: false, detail: formatFetchError(err, this.endpoint) }
     }
   }
 
