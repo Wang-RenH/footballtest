@@ -160,12 +160,19 @@ export function isDevAiProxyAvailable(): boolean {
   return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.local')
 }
 
-/** Cloudflare Pages 同源 /ai-proxy（不依赖 workers.dev） */
+/** 本地 / Cloudflare Pages / 自建服务器（公网 IP 或自有域名）走同源 /ai-proxy */
 export function usesSameOriginAiProxy(): boolean {
   if (isDevAiProxyAvailable()) return true
   if (typeof window === 'undefined') return false
   const h = window.location.hostname
-  return h.endsWith('pages.dev') || h.endsWith('pages.cloudflare.com')
+  // GitHub Pages 纯静态，没有 /ai-proxy
+  if (h.endsWith('github.io')) return false
+  if (h.endsWith('pages.dev') || h.endsWith('pages.cloudflare.com')) return true
+  // 自建：公网 IP
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(h)) return true
+  // 构建时打开：自有域名挂 Nginx 时用
+  if (String(import.meta.env.VITE_SAME_ORIGIN_AI_PROXY || '') === 'true') return true
+  return false
 }
 
 /**
