@@ -1,8 +1,8 @@
 # 绿茵征途 · 单机试玩版
 
-文字驱动的中国球员生涯模拟器。手机/电脑浏览器即可游玩，数据本地存档，无需联网。
+文字驱动的中国球员生涯模拟器。数据存在浏览器本地；可选 AI 叙事。
 
-## 快速开始
+## 本地开发
 
 ```bash
 cd foootball
@@ -10,36 +10,37 @@ npm install
 npm run dev
 ```
 
-浏览器打开终端提示的本地地址（一般是 `http://localhost:5173`）。手机同网访问可用电脑局域网 IP。
+打开 `http://localhost:5173`。Windows PowerShell 若禁止脚本，用 `npm.cmd run dev`。
+
+手机同网可访问电脑局域网 IP（如 `http://192.168.x.x:5173`），AI 走本机 Vite 代理。
 
 ```bash
-npm run build    # 产出 dist/
-npm run preview  # 预览生产包
+npm run build     # 产出 dist/（给服务器用，base 为 /）
+npm run preview
 ```
 
-## 给别人在线玩（推荐 Cloudflare Pages）
+## 线上部署（阿里云轻量 + Nginx）★ 推荐
 
-**手机要用 AI：不要用 github.io**（国内常打不开 `workers.dev` 代理）。
+国内手机要稳定用 AI，请用自建服务器，**不要用** GitHub Pages / Cloudflare workers.dev。
 
-按 [`docs/CLOUDFLARE_PAGES.md`](./docs/CLOUDFLARE_PAGES.md) 把仓库接到 Cloudflare Pages，用 `*.pages.dev` 链接分享。
+完整步骤：[docs/ALIYUN_DEPLOY.md](./docs/ALIYUN_DEPLOY.md)
 
-简要步骤：Cloudflare → Workers & Pages → Create → Pages → Connect to Git → 选本仓库 → Build `npm run build` → Output `dist` → 部署。
+当前示例地址（以你控制台 IP 为准）：
 
-| 地址 | 游戏 | 手机 AI |
-|------|------|---------|
-| `*.pages.dev` | 可以 | 可以（同源 `/ai-proxy`） |
-| `github.io` | 可以 | 国内常不行 |
-| 电脑 `npm run dev` | 可以 | 本机最稳；手机可连电脑局域网 IP |
+- 游戏：`http://39.106.101.56/`
+- 代理自检：`http://39.106.101.56/ai-proxy/health` → `ok`
 
-> 存档在每人浏览器的 localStorage。AI Key 各自在「设置」里填。
+更新发布（本机）：
 
-### 方案 B：GitHub Pages（仅试玩流程，AI 受限）
+```powershell
+cd D:\footballl\foootball
+npm.cmd run build
+scp -r dist/* root@你的公网IP:/var/www/football/
+```
 
-仓库已配置 Actions 发布到 `gh-pages`。适合不依赖 AI 的试玩；要 AI 请用上面的 Cloudflare Pages。
+服务器首次安装脚本：`scripts/install-football.sh`
 
-### 方案 C：自己买服务器
-
-仅当你要做 **账号登录 / 云存档 / 自建 AI 代理** 时才需要。现阶段不必买服务器。
+> 存档在每人浏览器的 localStorage。AI Key 在「设置」里各自填写，只存本机。
 
 ## 试玩内容
 

@@ -160,28 +160,22 @@ export function isDevAiProxyAvailable(): boolean {
   return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.local')
 }
 
-/** 本地 / Cloudflare Pages / 自建服务器（公网 IP 或自有域名）走同源 /ai-proxy */
+/** 本地 Vite / 自建 Nginx 服务器走同源 /ai-proxy */
 export function usesSameOriginAiProxy(): boolean {
   if (isDevAiProxyAvailable()) return true
   if (typeof window === 'undefined') return false
   const h = window.location.hostname
-  // GitHub Pages 纯静态，没有 /ai-proxy
   if (h.endsWith('github.io')) return false
-  if (h.endsWith('pages.dev') || h.endsWith('pages.cloudflare.com')) return true
-  // 自建：公网 IP
+  // 公网 IP（阿里云等）
   if (/^\d{1,3}(\.\d{1,3}){3}$/.test(h)) return true
-  // 构建时打开：自有域名挂 Nginx 时用
+  // 自有域名挂 Nginx 时构建注入
   if (String(import.meta.env.VITE_SAME_ORIGIN_AI_PROXY || '') === 'true') return true
   return false
 }
 
-/**
- * 可选的外置代理根。国内常访问不了 workers.dev，故默认不再填。
- * 仅当你有可访问的自建代理时再在设置里填写。
- */
+/** 可选外置代理根；自建 Nginx 同源时留空 */
 export const DEFAULT_AI_PROXY_BASE = ''
 
-/** 外置跨域代理根；本地 / CF Pages 同源代理时不用 */
 export function getHostedProxyBase(overrideFromSettings?: string): string {
   if (usesSameOriginAiProxy()) return ''
   const fromSettings = overrideFromSettings?.trim() || ''
@@ -189,17 +183,6 @@ export function getHostedProxyBase(overrideFromSettings?: string): string {
   const baked = String(import.meta.env.VITE_AI_PROXY_BASE || '').trim()
   if (baked) return baked.replace(/\/$/, '')
   return DEFAULT_AI_PROXY_BASE
-}
-
-export function isStaticWebHost(): boolean {
-  if (typeof window === 'undefined') return false
-  const h = window.location.hostname
-  return (
-    h.endsWith('github.io') ||
-    h.endsWith('pages.dev') ||
-    h.endsWith('netlify.app') ||
-    h.endsWith('vercel.app')
-  )
 }
 
 export function isGitHubPagesHost(): boolean {
@@ -228,24 +211,21 @@ export function resolveChatEndpoint(
     (provider === 'glm' && /bigmodel\.cn/i.test(override)) ||
     (provider === 'minimax' && /minimaxi?\.com/i.test(override))
 
-  // 用户填了自定义完整代理 URL（非官方、非内置 /ai-proxy）→ 原样使用
   if (override && !isOfficialOrProxy) {
     return override
   }
 
-  // 本地 Vite 或 Cloudflare Pages：同源 /ai-proxy
+  // 本地 Vite 或自建服务器：同源 /ai-proxy
   if (usesSameOriginAiProxy() && def.proxyPath) {
     return def.proxyPath
   }
 
-  // 可选外置 Worker / 自建代理
   const hosted = getHostedProxyBase(proxyBaseOverride)
   if (hosted && def.proxyPath) {
     const path = def.proxyPath.replace(/^\/ai-proxy/, '')
     return `${hosted}${path}`
   }
 
-  // GitHub Pages 无可用同源代理时走官方（浏览器会因 CORS 失败，错误文案会引导换 CF Pages）
   return override && isOfficialOrProxy && !override.startsWith('/ai-proxy/')
     ? override
     : def.endpoint
@@ -516,7 +496,7 @@ function formatHttpError(status: number, body: string): string {
   if (status === 429) return '请求过于频繁（HTTP 429）。'
   if (status === 404) return '接口或模型不存在（HTTP 404）。'
   if (status === 405) {
-    return 'HTTP 405：当前站点没有 AI 代理（GitHub Pages 不能 POST /ai-proxy）。请在设置填写「跨域代理根地址」，或用电脑 npm run dev 本地玩。'
+    return 'HTTP 405：当前站点没有 AI 代理。请打开阿里云服务器地址，或使用 npm run dev。'
   }
   return `HTTP ${status}: ${snippet || '请求失败'}`
 }
@@ -528,7 +508,7 @@ export function formatFetchError(err: unknown, endpointHint?: string): string {
     msg.startsWith('无法连接') ||
     msg.includes('GitHub Pages') ||
     msg.includes('本地事件库') ||
-    msg.includes('Cloudflare Pages')
+    msg.includes('阿里云')
   ) {
     return msg
   }
@@ -538,15 +518,15 @@ export function formatFetchError(err: unknown, endpointHint?: string): string {
   if (/failed to fetch|networkerror|load failed|cors/i.test(msg)) {
     const ep = endpointHint || ''
     if (isGitHubPagesHost()) {
-      return 'GitHub Pages 在国内很难连在线 AI（*.workers.dev 常打不开）。请改用 Cloudflare Pages 地址打开本游戏，或电脑执行 npm run dev；说明见仓库 docs/CLOUDFLARE_PAGES.md。'
+      return 'GitHub Pages 无法使用在线 AI。请打开阿里云服务器地址（见 README），或电脑 npm run dev。'
     }
     if (ep.includes('workers.dev')) {
-      return '跨域代理 workers.dev 连不上（国内常见）。请改用 Cloudflare Pages 部署（同源 /ai-proxy），或本地 npm run dev。'
+      return '旧的 workers.dev 代理已废弃。请使用阿里云 Nginx 站点（同源 /ai-proxy）。'
     }
     if (ep.startsWith('/ai-proxy/')) {
-      return '当前站点没有可用的 /ai-proxy。请用 npm run dev，或部署到 Cloudflare Pages。'
+      return '当前站点没有 /ai-proxy。请用阿里云部署或本地 npm run dev。'
     }
-    return `无法连接 AI（${msg}）。本地请用 npm run dev；线上请用 Cloudflare Pages。`
+    return `无法连接 AI（${msg}）。请用阿里云站点或本地 npm run dev。`
   }
   return msg
 }

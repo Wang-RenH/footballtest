@@ -523,8 +523,7 @@ export interface AppSettings {
   /** 用户自选模型名，如 glm-4.5-air / glm-4.6v / deepseek-chat */
   apiModel: string
   /**
-   * 线上静态站（GitHub Pages 等）用的跨域代理根，如 https://xxx.workers.dev
-   * 本地 npm run dev 可不填（走 Vite /ai-proxy）
+   * 可选外置代理根。自建 Nginx / 本地 dev 走同源 /ai-proxy，一般留空。
    */
   aiProxyBase: string
   difficulty: 'easy' | 'normal' | 'hard'

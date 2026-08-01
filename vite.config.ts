@@ -43,7 +43,7 @@ const aiProxy = {
 }
 
 export default defineConfig({
-  // GitHub Pages 子路径：https://Wang-RenH.github.io/footballtest/
+  // 默认 /（自建服务器）。仅 GitHub Actions 设 GITHUB_PAGES=true 时用子路径。
   base: process.env.GITHUB_PAGES === 'true' ? '/footballtest/' : '/',
   plugins: [react(), tailwindcss()],
   resolve: {

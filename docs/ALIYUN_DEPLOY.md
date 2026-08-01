@@ -1,122 +1,48 @@
 # 阿里云轻量 Ubuntu 部署《绿茵征途》
 
-服务器示例：Ubuntu 22.04 · 公网 IP `39.106.101.56`（以控制台为准）
+公网 IP 以控制台为准（示例：`39.106.101.56`）。系统：Ubuntu 22.04。
 
-## 0. 控制台先做
+## 0. 控制台
 
-1. 点 **设置密码**，设好 root 密码并记住  
-2. 防火墙/安全组放行：**22**、**80**（有 HTTPS 再开 443）  
-3. 本机 PowerShell 测试登录：
+1. **设置密码**（root）并可选重启一次  
+2. **防火墙**放行 TCP `22`、`80`（来源 `0.0.0.0/0`）  
+3. 用「远程连接」或本机：`ssh root@你的IP`
 
-```bash
-ssh root@39.106.101.56
-```
+## 1. 服务器安装 Nginx + 反代
 
-能进去再继续。
-
-## 1. 服务器上一键安装 Nginx
-
-在 SSH 里执行：
+远程终端执行：
 
 ```bash
-apt update
-apt install -y nginx
-mkdir -p /var/www/football
+curl -fsSL https://raw.githubusercontent.com/Wang-RenH/footballtest/main/scripts/install-football.sh | bash
 ```
 
-## 2. 写入站点配置
+或：
 
 ```bash
-cat > /etc/nginx/sites-available/football <<'EOF'
-server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    server_name _;
-
-    root /var/www/football;
-    index index.html;
-
-    # 游戏前端（SPA）
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    # AI 反代（替代 workers.dev）
-    location /ai-proxy/deepseek/ {
-        proxy_pass https://api.deepseek.com/;
-        proxy_ssl_server_name on;
-        proxy_set_header Host api.deepseek.com;
-        proxy_set_header Authorization $http_authorization;
-        proxy_set_header Content-Type $http_content_type;
-        proxy_read_timeout 180s;
-        proxy_send_timeout 180s;
-        client_max_body_size 4m;
-    }
-
-    location /ai-proxy/mimo/ {
-        proxy_pass https://api.xiaomimimo.com/;
-        proxy_ssl_server_name on;
-        proxy_set_header Host api.xiaomimimo.com;
-        proxy_set_header Authorization $http_authorization;
-        proxy_set_header api-key $http_api_key;
-        proxy_set_header Content-Type $http_content_type;
-        proxy_read_timeout 180s;
-        client_max_body_size 4m;
-    }
-
-    location /ai-proxy/glm/ {
-        proxy_pass https://open.bigmodel.cn/;
-        proxy_ssl_server_name on;
-        proxy_set_header Host open.bigmodel.cn;
-        proxy_set_header Authorization $http_authorization;
-        proxy_set_header Content-Type $http_content_type;
-        proxy_read_timeout 180s;
-        client_max_body_size 4m;
-    }
-
-    location /ai-proxy/minimax/ {
-        proxy_pass https://api.minimaxi.com/;
-        proxy_ssl_server_name on;
-        proxy_set_header Host api.minimaxi.com;
-        proxy_set_header Authorization $http_authorization;
-        proxy_set_header Content-Type $http_content_type;
-        proxy_read_timeout 180s;
-        client_max_body_size 4m;
-    }
-
-    location = /ai-proxy/health {
-        default_type text/plain;
-        return 200 'ok';
-    }
-}
-EOF
-
-ln -sfn /etc/nginx/sites-available/football /etc/nginx/sites-enabled/football
-rm -f /etc/nginx/sites-enabled/default
-nginx -t && systemctl reload nginx
+apt update && apt install -y nginx git
+git clone --depth 1 https://github.com/Wang-RenH/footballtest.git /tmp/footballtest
+bash /tmp/footballtest/scripts/install-football.sh
 ```
 
-## 3. 本机打包并上传（在你的 Windows 电脑上）
+看到 `OK: nginx ready` 即可。
 
-在项目目录：
+## 2. 本机上传前端
 
 ```powershell
 cd D:\footballl\foootball
-npm run build
-scp -r dist/* root@39.106.101.56:/var/www/football/
+npm.cmd run build
+scp -r dist/* root@你的IP:/var/www/football/
 ```
 
-若 `scp` 不可用，可用 WinSCP 把 `dist` 里全部文件拖到服务器 `/var/www/football/`。
+密码输入时屏幕不显示字符，输完回车。  
+**不要**设置环境变量 `GITHUB_PAGES=true`（那会打出错误的 `/footballtest/` 路径）。
 
-## 4. 验收
+## 3. 验收
 
-手机/电脑打开：
+- `http://你的IP/ai-proxy/health` → `ok`  
+- `http://你的IP/` → 游戏首页（可强制刷新）  
+- 设置里填 API Key → 测试连接  
 
-- 游戏：`http://39.106.101.56/`
-- 代理：`http://39.106.101.56/ai-proxy/health` → 应显示 `ok`
+## 4. 以后更新
 
-然后在游戏设置里填 API Key → 测试连接。
-
-## 5. 以后更新游戏
-
-本机重新 `npm run build`，再执行一次 `scp` 即可。
+重复第 2 步 `build` + `scp` 即可。

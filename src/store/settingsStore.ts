@@ -21,9 +21,9 @@ function load(): AppSettings {
     if (!parsed.apiModel && parsed.apiProvider !== 'none') {
       parsed.apiModel = getDefaultModel(parsed.apiProvider)
     }
-    // 旧默认 workers.dev 在国内不可达，自动清空改走新策略
+    // 清理已废弃的 workers.dev 默认值
     if (/workers\.dev/i.test(parsed.aiProxyBase || '')) {
-      parsed.aiProxyBase = DEFAULT_AI_PROXY_BASE
+      parsed.aiProxyBase = ''
     }
     return parsed
   } catch {
